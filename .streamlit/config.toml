@@ -1,0 +1,11 @@
+[server]
+# Prevent file watcher issues with cache files
+fileWatcherType = "poll"
+
+[client]
+# Disable caching issues
+caching = false
+
+[browser]
+# Open browser automatically
+gatherUsageStats = false 

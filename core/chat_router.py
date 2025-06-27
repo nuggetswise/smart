@@ -8,11 +8,14 @@ from core.tools.ocr_tool import OCRTool
 from core.tools.calendar_tool import CalendarTool
 from core.tools.websearch_tool import WebSearchTool
 from core.tools.summarizer import Summarizer
+from core.tools.time_tool import TimeTool, get_current_time
+from core.agents.calendar_agent import CalendarAgent
 from core.memory.long_term_memory import LongTermMemory
 import json
 import os
 import PyPDF2
 import io
+from datetime import datetime
 
 class ChatRouter:
     """
@@ -27,10 +30,27 @@ class ChatRouter:
         self.calendar_tool = CalendarTool()
         self.websearch_tool = WebSearchTool()
         self.summarizer = Summarizer()
+        self.time_tool = TimeTool()
         self.memory = LongTermMemory()
+        self.calendar_agent = CalendarAgent()
         
         # Load persona config
         self.persona_config = self._load_persona_config()
+        
+        # Start calendar agent monitoring
+        self._start_calendar_agent()
+        
+    def _start_calendar_agent(self):
+        """Start the calendar agent with notification callback."""
+        def notification_callback(notification):
+            """Callback for calendar notifications."""
+            if 'proactive_messages' not in st.session_state:
+                st.session_state.proactive_messages = []
+            
+            st.session_state.proactive_messages.append(notification)
+        
+        # Start the calendar agent
+        self.calendar_agent.start_monitoring(notification_callback)
         
     def _load_persona_config(self) -> Dict[str, Any]:
         """Load persona configuration from JSON file."""
@@ -57,6 +77,27 @@ class ChatRouter:
         if uploaded_file:
             return self._handle_file_upload(uploaded_file, message)
         
+        # Guard against hallucination for document summary requests
+        summary_triggers = [
+            'summary of related documents',
+            'summarize related documents',
+            'summarize uploaded documents',
+            'summarize uploaded files',
+            'summarize the documents',
+            'summarize the file',
+            'summarize this file',
+            'summarize this document',
+            'summarize my documents',
+            'summarize my files',
+        ]
+        if any(trigger in message.lower() for trigger in summary_triggers):
+            # Check for document context (pending file or other context)
+            if not st.session_state.get('pending_file'):
+                return (
+                    "I couldn't find any related documents to summarize. "
+                    "If you have a specific file or context, please upload it or clarify your request."
+                )
+        
         # Check for tool-specific commands
         if message.lower().startswith('/search '):
             query = message[8:]  # Remove '/search '
@@ -65,6 +106,47 @@ class ChatRouter:
             return self._handle_calendar_check()
         elif message.lower().startswith('/summarize'):
             return "Please provide the text you'd like me to summarize."
+        elif message.lower().startswith('/calendar-agent'):
+            return self._handle_calendar_agent_status()
+        elif message.lower().startswith('/test-notification'):
+            return self._handle_test_notification()
+        elif message.lower().startswith('/time'):
+            return self._handle_time_query(message)
+        
+        # Check for time-related queries
+        time_keywords = ['current time', 'what time', 'time in', 'timezone', 'what day', 'what date']
+        if any(keyword in message.lower() for keyword in time_keywords):
+            return self._handle_time_query(message)
+        
+        # --- NEW: Meeting prep/summary intent detection ---
+        # If last assistant message was a meeting notification with 'Need help preparing?',
+        # and user says 'yes' or similar, trigger meeting prep/summary logic.
+        last_msgs = self.memory.get_all_messages()[-4:]
+        last_assistant = next((m['content'] for m in reversed(last_msgs) if m['role'] == 'assistant'), None)
+        if last_assistant and 'need help preparing' in last_assistant.lower():
+            if message.strip().lower() in {'yes', 'yes please', 'please', 'ok', 'sure', 'y', 'yeah', 'yep'}:
+                # Find the latest event from the last proactive notification
+                last_event = None
+                for m in reversed(last_msgs):
+                    if 'Meeting Reminder' in m['content']:
+                        # Try to extract event summary from the message
+                        import re
+                        match = re.search(r'\*\*(.*?)\*\*', m['content'])
+                        event_summary = match.group(1) if match else None
+                        # Try to get event from calendar agent
+                        if event_summary:
+                            events = self.calendar_tool.get_upcoming_events_raw(hours=24)
+                            for event in events:
+                                if event.get('summary') == event_summary:
+                                    last_event = event
+                                    break
+                        break
+                if last_event:
+                    # Generate meeting prep/summary using the agent's AI
+                    prep = self.calendar_agent._generate_meeting_insights(last_event)
+                    return f"Here's your meeting preparation summary for **{last_event.get('summary')}**:\n\n{prep}"
+                else:
+                    return "Sorry, I couldn't find the meeting details to prepare a summary. Please specify the meeting or try again closer to the event time."
         
         # Regular conversation - use LLM with context
         return self._handle_conversation(message)
@@ -147,6 +229,79 @@ class ChatRouter:
         except Exception as e:
             return f"Calendar check failed: {str(e)}"
     
+    def _handle_calendar_agent_status(self) -> str:
+        """Handle calendar agent status check requests."""
+        try:
+            # Get calendar agent status
+            status = self.calendar_agent.get_status()
+            
+            # Build response
+            response = f"## 🤖 Calendar Agent Status\n\n"
+            
+            # Running status
+            if status['running']:
+                response += "✅ **Agent Status:** Running\n"
+            else:
+                response += "❌ **Agent Status:** Stopped\n"
+            
+            # Thread status
+            if status['thread_alive']:
+                response += "🔄 **Monitoring:** Active\n"
+            else:
+                response += "⏸️ **Monitoring:** Paused\n"
+            
+            # Configuration
+            response += f"⏱️ **Check Interval:** {status['check_interval']} seconds\n"
+            response += f"📊 **Notifications Sent:** {status['notified_count']}\n"
+            
+            if status['last_check']:
+                response += f"🕐 **Last Check:** {status['last_check'][:19]}\n"
+            else:
+                response += "🕐 **Last Check:** Never\n"
+            
+            # AI capabilities
+            response += f"\n🤖 **AI Capabilities:**\n"
+            response += f"- AI Insights: {'✅ Enabled' if status['ai_insights_enabled'] else '❌ Disabled'}\n"
+            response += f"- Meeting Prep: {'✅ Enabled' if status['meeting_prep_enabled'] else '❌ Disabled'}\n"
+            
+            response += "\n💡 **Commands:**"
+            response += "\n- `/test-notification` - Test AI-powered notification"
+            response += "\n- `/calendar` - Check upcoming events"
+            
+            self.memory.add_message("user", "/calendar-agent")
+            self.memory.add_message("assistant", response)
+            return response
+            
+        except Exception as e:
+            error_msg = f"Calendar agent status check failed: {str(e)}"
+            self.memory.add_message("user", "/calendar-agent")
+            self.memory.add_message("assistant", error_msg)
+            return error_msg
+    
+    def _handle_test_notification(self) -> str:
+        """Handle test notification requests."""
+        try:
+            # Generate test notification
+            test_notification = self.calendar_agent.test_notification()
+            
+            # Add to proactive messages
+            if 'proactive_messages' not in st.session_state:
+                st.session_state.proactive_messages = []
+            
+            st.session_state.proactive_messages.append(test_notification)
+            
+            response = "✅ **Test notification sent!** Check the chat for the AI-powered meeting reminder with insights."
+            
+            self.memory.add_message("user", "/test-notification")
+            self.memory.add_message("assistant", response)
+            return response
+            
+        except Exception as e:
+            error_msg = f"Test notification failed: {str(e)}"
+            self.memory.add_message("user", "/test-notification")
+            self.memory.add_message("assistant", error_msg)
+            return error_msg
+    
     def _handle_conversation(self, message: str) -> str:
         """Handle regular conversation with LLM and context."""
         try:
@@ -195,6 +350,10 @@ class ChatRouter:
     
     def _build_conversation_prompt(self, message: str, context: List[Dict[str, str]], file_content: Optional[str] = None) -> str:
         """Build conversation prompt with context, persona, and file content."""
+        # Get current time information
+        current_time_info = self.time_tool.get_time_in_toronto()
+        current_time_str = f"{current_time_info['time']} {current_time_info['timezone_abbr']} on {current_time_info['date']}"
+        
         prompt = f"""You are {self.persona_config['name']}, {self.persona_config['personality']}.
 
 You are a helpful, intelligent AI assistant that provides clear, well-structured, and actionable responses. Always aim to be:
@@ -203,6 +362,64 @@ You are a helpful, intelligent AI assistant that provides clear, well-structured
 - Specific with concrete examples
 - Professional yet friendly
 - Helpful and actionable
+
+**CURRENT TIME:** {current_time_str}
+
+**IMPORTANT:** You have access to real-time, accurate time information. When users ask about current time, date, or timezone information, you can provide accurate, up-to-the-moment information. Do not rely on potentially outdated information from search results for time queries.
+
+"""
+        
+        # Check if user is asking about meetings or preparation
+        meeting_keywords = ['meeting', 'prepare', 'preparation', 'agenda', 'attendees', 'schedule', 'calendar', 'appointment']
+        is_meeting_related = any(keyword in message.lower() for keyword in meeting_keywords)
+        
+        # Add calendar data if meeting-related
+        if is_meeting_related:
+            try:
+                events = self.calendar_tool.get_upcoming_events_raw(hours=24)
+                if events:
+                    prompt += f"""IMPORTANT: The user is asking about meetings. Here are their upcoming calendar events for the next 24 hours:
+
+"""
+                    for event in events:
+                        summary = event.get('summary', 'Unknown Event')
+                        start_time = event.get('start', {}).get('dateTime', 'Unknown time')
+                        location = event.get('location', 'No location')
+                        description = event.get('description', 'No description')
+                        attendees = event.get('attendees', [])
+                        
+                        # Format attendees
+                        attendee_list = []
+                        for attendee in attendees:
+                            name = attendee.get('displayName') or attendee.get('email', 'Unknown')
+                            attendee_list.append(name)
+                        
+                        prompt += f"""📅 **{summary}**
+🕐 Time: {start_time}
+📍 Location: {location}
+👥 Attendees: {', '.join(attendee_list) if attendee_list else 'No attendees listed'}
+📝 Description: {description}
+
+"""
+                    prompt += """When the user asks about meeting preparation, use this calendar data to provide specific, actionable insights. Don't ask them for meeting details - you already have them from their calendar.
+
+If they ask about preparing for a specific meeting, provide comprehensive preparation advice including:
+- Meeting type analysis
+- Key preparation points
+- Suggested agenda items
+- Questions to consider
+- Materials needed
+- Follow-up actions
+
+Be specific and actionable based on the meeting details you have access to.
+
+"""
+                else:
+                    prompt += """IMPORTANT: The user is asking about meetings, but no upcoming events were found in their calendar for the next 24 hours.
+
+"""
+            except Exception as e:
+                prompt += f"""IMPORTANT: The user is asking about meetings, but there was an error accessing their calendar: {e}
 
 """
         
@@ -301,6 +518,132 @@ Your analysis:"""
             
         except Exception as e:
             return f"Error analyzing file content: {str(e)}"
+
+    def _generate_meeting_prep_insights(self, event: Dict[str, Any]) -> str:
+        """Generate comprehensive meeting preparation insights."""
+        try:
+            summary = event.get('summary', 'Unknown Meeting')
+            start_time = event.get('start', {}).get('dateTime', '')
+            location = event.get('location', 'No location specified')
+            description = event.get('description', '')
+            attendees = event.get('attendees', [])
+            
+            # Format attendees
+            attendee_list = []
+            if attendees:
+                for attendee in attendees:
+                    email = attendee.get('email', '')
+                    name = attendee.get('displayName', email)
+                    if name:  # Only add non-empty names
+                        attendee_list.append(name)
+            
+            # Format time
+            if start_time:
+                try:
+                    dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                    formatted_time = dt.strftime("%I:%M %p")
+                    formatted_date = dt.strftime("%B %d, %Y")
+                except:
+                    formatted_time = "TBD"
+                    formatted_date = "TBD"
+            else:
+                formatted_time = "TBD"
+                formatted_date = "TBD"
+            
+            # Build context for AI analysis
+            context = f"""Meeting Details:
+- Title: {summary}
+- Time: {formatted_time} on {formatted_date}
+- Location: {location}
+- Description: {description}
+- Attendees: {', '.join(attendee_list) if attendee_list else 'No attendees listed'}"""
+            
+            # AI prompt for comprehensive preparation
+            prompt = f"""Based on this meeting information, provide comprehensive preparation advice:
+
+{context}
+
+Please provide:
+1. **Meeting Type Analysis**: What type of meeting is this likely to be?
+2. **Key Preparation Points**: What should be prepared in advance?
+3. **Suggested Agenda Items**: What topics should be covered?
+4. **Questions to Consider**: What questions should be ready?
+5. **Materials Needed**: What documents or resources might be needed?
+6. **Follow-up Actions**: What should be planned for after the meeting?
+
+Format your response with clear sections and bullet points. Be specific and actionable."""
+
+            # Get AI response
+            response = self.llm_client.get_response(prompt)
+            
+            # Format the complete preparation guide
+            prep_guide = f"""## 📋 **Meeting Preparation Guide for: {summary}**
+
+**📅 Meeting Details:**
+- **Time:** {formatted_time} on {formatted_date}
+- **Location:** {location}
+- **Attendees:** {', '.join(attendee_list) if attendee_list else 'No attendees listed'}
+
+{response}
+
+**💡 Pro Tips:**
+- Review any related documents or previous meeting notes
+- Prepare your key talking points in advance
+- Have your questions ready
+- Consider the meeting objectives and desired outcomes
+- Plan for follow-up actions after the meeting
+
+**🎯 Success Metrics:**
+- Clear action items identified
+- Next steps agreed upon
+- All participants aligned on goals
+- Follow-up meeting scheduled if needed"""
+            
+            return prep_guide
+            
+        except Exception as e:
+            return f"Error generating meeting preparation insights: {e}"
+
+    def _handle_time_query(self, message: str) -> str:
+        """Handle time-related queries."""
+        try:
+            message_lower = message.lower()
+            
+            # Check for specific timezone requests
+            if 'toronto' in message_lower or 'canada' in message_lower:
+                time_info = self.time_tool.get_time_in_toronto()
+                timezone_name = "Toronto, Canada"
+            elif 'new york' in message_lower or 'nyc' in message_lower:
+                time_info = self.time_tool.get_time_in_new_york()
+                timezone_name = "New York, USA"
+            elif 'london' in message_lower or 'uk' in message_lower:
+                time_info = self.time_tool.get_time_in_london()
+                timezone_name = "London, UK"
+            elif 'tokyo' in message_lower or 'japan' in message_lower:
+                time_info = self.time_tool.get_time_in_tokyo()
+                timezone_name = "Tokyo, Japan"
+            elif 'utc' in message_lower:
+                time_info = self.time_tool.get_utc_time()
+                timezone_name = "UTC"
+            else:
+                # Default to Toronto time
+                time_info = self.time_tool.get_time_in_toronto()
+                timezone_name = "Toronto, Canada"
+            
+            if 'error' in time_info:
+                return f"Error getting time information: {time_info['error']}"
+            
+            # Format the response
+            response = f"The current time in {timezone_name} is **{time_info['time']} {time_info['timezone_abbr']}** on **{time_info['date']}**."
+            
+            # Add to memory
+            self.memory.add_message("user", message)
+            self.memory.add_message("assistant", response)
+            
+            return response
+            
+        except Exception as e:
+            return f"Error handling time query: {str(e)}"
 
 def route_input(message, files=None):
     # TODO: Implement intent detection and routing
