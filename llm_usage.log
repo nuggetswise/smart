@@ -1,0 +1,92 @@
+{"timestamp": "2025-06-27T00:46:30.684627", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T00:46:31.142355", "provider": "gemini", "model": null, "usage": {"total_tokens": 16}, "cost_usd": 4e-06}
+{"timestamp": "2025-06-27T00:46:38.187067", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T00:46:41.428953", "provider": "gemini", "model": null, "usage": {"total_tokens": 356}, "cost_usd": 8.9e-05}
+{"timestamp": "2025-06-27T00:46:41.517109", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T00:46:41.954842", "provider": "gemini", "model": null, "usage": {"total_tokens": 90}, "cost_usd": 2.25e-05}
+{"timestamp": "2025-06-27T00:46:42.088078", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T00:46:42.980667", "provider": "gemini", "model": null, "usage": {"total_tokens": 334}, "cost_usd": 8.35e-05}
+{"timestamp": "2025-06-27T00:46:44.238444", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T00:46:47.376523", "provider": "gemini", "model": null, "usage": {"total_tokens": 323}, "cost_usd": 8.075e-05}
+{"timestamp": "2025-06-27T02:45:54.648893", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:45:56.148909", "provider": "gemini", "model": null, "usage": {"total_tokens": 908}, "cost_usd": 0.000227}
+{"timestamp": "2025-06-27T02:48:58.091936", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:49:00.881521", "provider": "gemini", "model": null, "usage": {"total_tokens": 1097}, "cost_usd": 0.00027425}
+{"timestamp": "2025-06-27T02:49:51.597871", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:49:52.791337", "provider": "gemini", "model": null, "usage": {"total_tokens": 1092}, "cost_usd": 0.000273}
+{"timestamp": "2025-06-27T02:55:02.429451", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:06.550227", "provider": "gemini", "model": null, "usage": {"total_tokens": 1503}, "cost_usd": 0.00037575}
+{"timestamp": "2025-06-27T02:55:06.897762", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:10.281259", "provider": "gemini", "model": null, "usage": {"total_tokens": 1581}, "cost_usd": 0.00039525}
+{"timestamp": "2025-06-27T02:55:10.466187", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:13.227408", "provider": "gemini", "model": null, "usage": {"total_tokens": 1517}, "cost_usd": 0.00037925}
+{"timestamp": "2025-06-27T02:55:13.423488", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:16.731438", "provider": "gemini", "model": null, "usage": {"total_tokens": 1666}, "cost_usd": 0.0004165}
+{"timestamp": "2025-06-27T02:55:16.906700", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:19.699446", "provider": "gemini", "model": null, "usage": {"total_tokens": 1666}, "cost_usd": 0.0004165}
+{"timestamp": "2025-06-27T02:55:19.896721", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:22.852323", "provider": "gemini", "model": null, "usage": {"total_tokens": 1812}, "cost_usd": 0.000453}
+{"timestamp": "2025-06-27T02:55:23.026419", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:26.148593", "provider": "gemini", "model": null, "usage": {"total_tokens": 1663}, "cost_usd": 0.00041575}
+{"timestamp": "2025-06-27T02:55:26.327342", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:29.474851", "provider": "gemini", "model": null, "usage": {"total_tokens": 1615}, "cost_usd": 0.00040375}
+{"timestamp": "2025-06-27T02:55:29.625182", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:32.644246", "provider": "gemini", "model": null, "usage": {"total_tokens": 1617}, "cost_usd": 0.00040425}
+{"timestamp": "2025-06-27T02:55:32.817017", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:35.654376", "provider": "gemini", "model": null, "usage": {"total_tokens": 1590}, "cost_usd": 0.0003975}
+{"timestamp": "2025-06-27T02:55:35.916681", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:38.849416", "provider": "gemini", "model": null, "usage": {"total_tokens": 1596}, "cost_usd": 0.000399}
+{"timestamp": "2025-06-27T02:55:39.023294", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:42.229782", "provider": "gemini", "model": null, "usage": {"total_tokens": 1622}, "cost_usd": 0.0004055}
+{"timestamp": "2025-06-27T02:55:42.484927", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:45.416303", "provider": "gemini", "model": null, "usage": {"total_tokens": 1577}, "cost_usd": 0.00039425}
+{"timestamp": "2025-06-27T02:55:45.591040", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:48.682093", "provider": "gemini", "model": null, "usage": {"total_tokens": 1542}, "cost_usd": 0.0003855}
+{"timestamp": "2025-06-27T02:55:48.865570", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:51.753330", "provider": "gemini", "model": null, "usage": {"total_tokens": 1511}, "cost_usd": 0.00037775}
+{"timestamp": "2025-06-27T02:55:51.974172", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:54.921233", "provider": "gemini", "model": null, "usage": {"total_tokens": 1511}, "cost_usd": 0.00037775}
+{"timestamp": "2025-06-27T02:55:55.105822", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:55:58.306801", "provider": "gemini", "model": null, "usage": {"total_tokens": 1505}, "cost_usd": 0.00037625}
+{"timestamp": "2025-06-27T02:55:58.478799", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:01.337651", "provider": "gemini", "model": null, "usage": {"total_tokens": 1486}, "cost_usd": 0.0003715}
+{"timestamp": "2025-06-27T02:56:01.508972", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:04.796529", "provider": "gemini", "model": null, "usage": {"total_tokens": 1535}, "cost_usd": 0.00038375}
+{"timestamp": "2025-06-27T02:56:05.107772", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:07.970648", "provider": "gemini", "model": null, "usage": {"total_tokens": 1528}, "cost_usd": 0.000382}
+{"timestamp": "2025-06-27T02:56:08.147114", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:10.961232", "provider": "gemini", "model": null, "usage": {"total_tokens": 1525}, "cost_usd": 0.00038125}
+{"timestamp": "2025-06-27T02:56:11.161203", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:14.044319", "provider": "gemini", "model": null, "usage": {"total_tokens": 1516}, "cost_usd": 0.000379}
+{"timestamp": "2025-06-27T02:56:14.215232", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:16.863931", "provider": "gemini", "model": null, "usage": {"total_tokens": 1475}, "cost_usd": 0.00036875}
+{"timestamp": "2025-06-27T02:56:17.049732", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:19.808932", "provider": "gemini", "model": null, "usage": {"total_tokens": 1445}, "cost_usd": 0.00036125}
+{"timestamp": "2025-06-27T02:56:19.978919", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:22.752119", "provider": "gemini", "model": null, "usage": {"total_tokens": 1378}, "cost_usd": 0.0003445}
+{"timestamp": "2025-06-27T02:56:22.922151", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:25.511091", "provider": "gemini", "model": null, "usage": {"total_tokens": 1348}, "cost_usd": 0.000337}
+{"timestamp": "2025-06-27T02:56:25.713991", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:28.471663", "provider": "gemini", "model": null, "usage": {"total_tokens": 1330}, "cost_usd": 0.0003325}
+{"timestamp": "2025-06-27T02:56:28.652058", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:31.378965", "provider": "gemini", "model": null, "usage": {"total_tokens": 1298}, "cost_usd": 0.0003245}
+{"timestamp": "2025-06-27T02:56:31.552953", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:34.546415", "provider": "gemini", "model": null, "usage": {"total_tokens": 1340}, "cost_usd": 0.000335}
+{"timestamp": "2025-06-27T02:56:34.727023", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:37.710299", "provider": "gemini", "model": null, "usage": {"total_tokens": 1379}, "cost_usd": 0.00034475}
+{"timestamp": "2025-06-27T02:56:37.918481", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:40.630418", "provider": "gemini", "model": null, "usage": {"total_tokens": 1378}, "cost_usd": 0.0003445}
+{"timestamp": "2025-06-27T02:56:40.839651", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:43.553785", "provider": "gemini", "model": null, "usage": {"total_tokens": 1369}, "cost_usd": 0.00034225}
+{"timestamp": "2025-06-27T02:56:43.741436", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T02:56:46.649145", "provider": "gemini", "model": null, "usage": {"total_tokens": 1398}, "cost_usd": 0.0003495}
+{"timestamp": "2025-06-27T03:06:11.517429", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T03:06:12.204493", "provider": "gemini", "model": null, "usage": {"total_tokens": 1231}, "cost_usd": 0.00030775}
+{"timestamp": "2025-06-27T03:27:55.059503", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T03:27:56.478515", "provider": "gemini", "model": null, "usage": {"total_tokens": 956}, "cost_usd": 0.000239}
+{"timestamp": "2025-06-27T03:35:13.970617", "provider": "groq", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T03:35:18.662739", "provider": "gemini", "model": null, "usage": {"total_tokens": 1584}, "cost_usd": 0.00023759999999999997}
+{"timestamp": "2025-06-27T04:04:48.052221", "provider": "groq", "model": null, "usage": {"prompt_tokens": 28, "completion_tokens": 98, "total_tokens": 126}, "cost_usd": 3.402e-05}
+{"timestamp": "2025-06-27T04:04:48.102614", "provider": "groq", "model": "gemini-2.0-flash-exp", "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-27T04:04:48.859110", "provider": "gemini", "model": "gemini-2.0-flash-exp", "usage": {"total_tokens": 40}, "cost_usd": 6e-06}
+{"timestamp": "2025-06-27T04:09:28.434622", "provider": "groq", "model": "gemma2-9b-it", "usage": {"prompt_tokens": 1872, "completion_tokens": 484, "total_tokens": 2356}, "cost_usd": 0.00063612}
