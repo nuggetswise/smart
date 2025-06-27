@@ -174,13 +174,19 @@ def check_proactive_agents():
         for msg in proactive_messages:
             if msg not in st.session_state.proactive_messages:
                 st.session_state.proactive_messages.append(msg)
-                st.session_state.chat_history.append({'role': 'system', 'content': msg})
+                if isinstance(msg, dict) and 'content' in msg:
+                    st.session_state.chat_history.append({'role': 'system', 'content': msg['content']})
+                else:
+                    st.session_state.chat_history.append({'role': 'system', 'content': str(msg)})
     
     # Check for webhook messages
     if st.session_state.webhook_handler:
         webhook_messages = st.session_state.webhook_handler.get_pending_messages()
         for msg in webhook_messages:
-            st.session_state.chat_history.append({'role': 'system', 'content': msg['content']})
+            if isinstance(msg, dict) and 'content' in msg:
+                st.session_state.chat_history.append({'role': 'system', 'content': msg['content']})
+            else:
+                st.session_state.chat_history.append({'role': 'system', 'content': str(msg)})
 
 def render_rich_notification_card(notification):
     """Render a rich notification card with action buttons."""
