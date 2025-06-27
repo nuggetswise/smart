@@ -1,5 +1,6 @@
 import streamlit as st
 from ui.upload_handler import handle_upload
+import streamlit.components.v1 as components
 
 # Helper to render a single message (user or assistant)
 def render_message(message, is_user=False, is_system=False):
@@ -37,6 +38,17 @@ def render_chat_interface():
         st.session_state.streaming = False
     if 'pending_file' not in st.session_state:
         st.session_state.pending_file = None
+    if 'selected_tool' not in st.session_state:
+        st.session_state.selected_tool = 'Chat'
+
+    # Tool selector
+    tool = st.selectbox(
+        'Choose a tool:',
+        ['Chat', 'Search the web'],
+        index=0,
+        key='selected_tool',
+        help='Select how you want to process your message.'
+    )
 
     # File/image upload
     uploaded_file = handle_upload()
@@ -56,6 +68,22 @@ def render_chat_interface():
             render_message(msg['content'], is_user=(msg['role']=='user'))
 
     # User input
+    # Add a hidden form to allow Enter-to-send
+    st.markdown("""
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var textarea = document.querySelector('textarea[data-testid=\"stTextArea\"]');
+        if (textarea) {
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.querySelector('form').requestSubmit();
+                }
+            });
+        }
+    });
+    </script>
+    """, unsafe_allow_html=True)
     with st.form('chat_input_form', clear_on_submit=True):
         user_input = st.text_area('Type your message...', key='chat_input', height=68)
         submitted = st.form_submit_button('Send')
