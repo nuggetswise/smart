@@ -17,6 +17,14 @@ import PyPDF2
 import io
 from datetime import datetime, timedelta
 from core.oauth_handler import get_user_credentials, is_user_authenticated, show_connect_calendar_button, show_user_info, handle_oauth_callback
+from core.prompts import (
+    build_conversation_prompt,
+    build_file_analysis_prompt,
+    build_meeting_prep_prompt,
+    build_meeting_insights_prompt,
+    get_calendar_error_prompt,
+    get_time_response_template
+)
 
 class ChatRouter:
     """
@@ -486,133 +494,29 @@ class ChatRouter:
         current_time_info = self.time_tool.get_time_in_toronto()
         current_time_str = f"{current_time_info['time']} {current_time_info['timezone_abbr']} on {current_time_info['date']}"
         
-        prompt = f"""You are {self.persona_config['name']}, {self.persona_config['personality']}.
-
-You are a helpful, intelligent AI assistant that provides clear, well-structured, and actionable responses. Always aim to be:
-- Direct and relevant
-- Well-organized with clear sections
-- Specific with concrete examples
-- Professional yet friendly
-- Helpful and actionable
-
-**CURRENT TIME:** {current_time_str}
-
-**IMPORTANT:** You have access to real-time, accurate time information. When users ask about current time, date, or timezone information, you can provide accurate, up-to-the-moment information. Do not rely on potentially outdated information from search results for time queries.
-
-**MEETING SCHEDULING CAPABILITIES:**
-When users ask to schedule meetings or appointments, you can actually create calendar events. Here's how to handle scheduling requests:
-
-1. **Detect scheduling intent** - Look for phrases like:
-   - "schedule a meeting with [person]"
-   - "book an appointment"
-   - "set up a call"
-   - "meet with [person]"
-   - "schedule [time] meeting"
-
-2. **Extract meeting details** from the user's request:
-   - Attendee email(s)
-   - Date and time (support natural language like "tomorrow at 2pm EST")
-   - Meeting title/summary
-   - Duration (default to 30 minutes if not specified)
-   - Location (default to "Google Meet" if not specified)
-
-3. **Create the meeting** using the calendar tool:
-   - Use the calendar_tool.add_event() method
-   - Provide all extracted details
-   - Confirm the meeting was created successfully
-
-4. **Respond with confirmation** including:
-   - Meeting details (title, time, attendees)
-   - Confirmation that it was scheduled
-   - Any relevant follow-up information
-
-**Example scheduling flow:**
-User: "Schedule a meeting with john@example.com tomorrow at 2pm EST"
-Assistant: [Extract details and create event via calendar_tool.add_event()]
-Response: "✅ I've scheduled a meeting with john@example.com for tomorrow at 2:00 PM EST. The meeting has been added to your calendar and an invitation has been sent."
-
-**IMPORTANT:** When scheduling meetings, always use the actual calendar tool to create the event, don't just respond as if you did it.
-
-"""
-        
         # Check if user is asking about meetings or preparation
         meeting_keywords = ['meeting', 'prepare', 'preparation', 'agenda', 'attendees', 'schedule', 'calendar', 'appointment']
         is_meeting_related = any(keyword in message.lower() for keyword in meeting_keywords)
         
-        # Add calendar data if meeting-related
+        # Get calendar events if meeting-related
+        calendar_events = None
         if is_meeting_related:
             try:
-                events = self.calendar_tool.get_upcoming_events_raw(hours=24)
-                if events:
-                    prompt += f"""IMPORTANT: The user is asking about meetings. Here are their upcoming calendar events for the next 24 hours:
-
-"""
-                    for event in events:
-                        summary = event.get('summary', 'Unknown Event')
-                        start_time = event.get('start', {}).get('dateTime', 'Unknown time')
-                        location = event.get('location', 'No location')
-                        description = event.get('description', 'No description')
-                        attendees = event.get('attendees', [])
-                        
-                        # Format attendees
-                        attendee_list = []
-                        for attendee in attendees:
-                            name = attendee.get('displayName') or attendee.get('email', 'Unknown')
-                            attendee_list.append(name)
-                        
-                        prompt += f"""📅 **{summary}**
-🕐 Time: {start_time}
-📍 Location: {location}
-👥 Attendees: {', '.join(attendee_list) if attendee_list else 'No attendees listed'}
-📝 Description: {description}
-
-"""
-                    prompt += """When the user asks about meeting preparation, use this calendar data to provide specific, actionable insights. Don't ask them for meeting details - you already have them from their calendar.
-
-If they ask about preparing for a specific meeting, provide comprehensive preparation advice including:
-- Meeting type analysis
-- Key preparation points
-- Suggested agenda items
-- Questions to consider
-- Materials needed
-- Follow-up actions
-
-Be specific and actionable based on the meeting details you have access to.
-
-"""
-                else:
-                    prompt += """IMPORTANT: The user is asking about meetings, but no upcoming events were found in their calendar for the next 24 hours.
-
-"""
+                calendar_events = self.calendar_tool.get_upcoming_events_raw(hours=24)
             except Exception as e:
-                prompt += f"""IMPORTANT: The user is asking about meetings, but there was an error accessing their calendar: {e}
-
-"""
+                # If calendar access fails, we'll handle it in the prompt builder
+                calendar_events = []
         
-        # Add file content if available
-        if file_content:
-            prompt += f"""IMPORTANT: The user has uploaded a file with the following content:
-{file_content}
-
-When the user asks questions about this content, provide a comprehensive analysis that:
-- Directly answers their specific question
-- Uses bullet points or structured format for clarity
-- Highlights the most relevant details and achievements
-- Is specific and quantitative when possible
-- Organizes information logically (by role, company, or topic)
-- Maintains a professional, helpful tone
-
-"""
-        
-        if context:
-            prompt += "Recent conversation context:\n"
-            for msg in context:
-                role = "User" if msg['role'] == 'user' else "Assistant"
-                prompt += f"{role}: {msg['content']}\n"
-            prompt += "\n"
-        
-        prompt += f"User: {message}\nAssistant:"
-        return prompt
+        # Build the complete prompt using centralized prompt builder
+        return build_conversation_prompt(
+            message=message,
+            context=context,
+            file_content=file_content,
+            persona_name=self.persona_config['name'],
+            persona_personality=self.persona_config['personality'],
+            current_time=current_time_str,
+            calendar_events=calendar_events
+        )
     
     def check_proactive_agents(self) -> List[str]:
         """
@@ -646,33 +550,14 @@ When the user asks questions about this content, provide a comprehensive analysi
             # Get selected model from session state
             selected_model = getattr(st.session_state, 'selected_model', None)
             
-            # Build a focused prompt for file analysis
-            prompt = f"""You are {self.persona_config['name']}, {self.persona_config['personality']}.
-
-The user has uploaded a file named '{file_name}' with the following content:
-{file_content}
-
-The user is asking: "{user_question}"
-
-Please provide a comprehensive, well-structured analysis that directly answers their question. 
-
-**Guidelines:**
-- Focus specifically on what they're asking about
-- Provide clear, actionable insights
-- Use bullet points or structured format for better readability
-- Highlight the most relevant details and achievements
-- Be specific and quantitative when possible
-- If summarizing experience, organize by role/company
-- Keep the response focused and professional
-
-**Your analysis should be:**
-- Direct and relevant to the question
-- Well-organized with clear sections
-- Specific with concrete examples
-- Professional in tone
-- Helpful for understanding the person's background
-
-Your analysis:"""
+            # Build a focused prompt for file analysis using centralized prompts
+            prompt = build_file_analysis_prompt(
+                file_content=file_content,
+                user_question=user_question,
+                file_name=file_name,
+                persona_name=self.persona_config['name'],
+                persona_personality=self.persona_config['personality']
+            )
             
             response = self.llm_client.get_response(prompt, selected_model)
             
@@ -724,20 +609,8 @@ Your analysis:"""
 - Description: {description}
 - Attendees: {', '.join(attendee_list) if attendee_list else 'No attendees listed'}"""
             
-            # AI prompt for comprehensive preparation
-            prompt = f"""Based on this meeting information, provide comprehensive preparation advice:
-
-{context}
-
-Please provide:
-1. **Meeting Type Analysis**: What type of meeting is this likely to be?
-2. **Key Preparation Points**: What should be prepared in advance?
-3. **Suggested Agenda Items**: What topics should be covered?
-4. **Questions to Consider**: What questions should be ready?
-5. **Materials Needed**: What documents or resources might be needed?
-6. **Follow-up Actions**: What should be planned for after the meeting?
-
-Format your response with clear sections and bullet points. Be specific and actionable."""
+            # AI prompt for comprehensive preparation using centralized prompts
+            prompt = build_meeting_prep_prompt(context)
 
             # Get AI response
             response = self.llm_client.get_response(prompt)
@@ -799,8 +672,8 @@ Format your response with clear sections and bullet points. Be specific and acti
             if 'error' in time_info:
                 return f"Error getting time information: {time_info['error']}"
             
-            # Format the response
-            response = f"The current time in {timezone_name} is **{time_info['time']} {time_info['timezone_abbr']}** on **{time_info['date']}**."
+            # Format the response using centralized template
+            response = get_time_response_template(timezone_name, time_info)
             
             # Add to memory
             self.memory.add_message("user", message)

@@ -2,6 +2,7 @@
 Long-form summarization tool using LLM.
 """
 from core.llm_client import generate_response
+from core.prompts import build_summarization_prompt
 
 class Summarizer:
     """
@@ -11,7 +12,7 @@ class Summarizer:
         """
         Summarize long-form text using the LLM.
         """
-        prompt = f"Summarize the following text in a concise, actionable way for productivity:\n\n{text}\n\nSummary:"
+        prompt = build_summarization_prompt(text)
         return generate_response(prompt, stream=False)
 
 def summarize(text):

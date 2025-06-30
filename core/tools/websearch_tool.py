@@ -6,6 +6,7 @@ from duckduckgo_search import DDGS
 import requests
 from core.llm_client import generate_response
 from core.tools.time_tool import TimeTool, get_current_time
+from core.prompts import build_web_search_prompt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,14 +42,7 @@ class WebSearchTool:
                         break
         # Build context for LLM
         context = '\n'.join([f"{r.get('snippet','')} ({r.get('link','')})" for r in results])
-        prompt = f"""
-You are a research assistant. Summarize the following web results for the user. Include hyperlinks in markdown.
-
-Web results:
-{context}
-
-Summary:
-"""
+        prompt = build_web_search_prompt(context)
         summary = generate_response(prompt, stream=False)
         return summary
     

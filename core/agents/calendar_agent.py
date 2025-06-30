@@ -8,11 +8,12 @@ import os
 import time
 import threading
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Callable
 import logging
 from core.tools.calendar_tool import CalendarTool
 from core.llm_client import LLMClient
 import pytz
+from core.prompts import build_meeting_insights_prompt
 
 class CalendarAgent:
     """
@@ -263,16 +264,7 @@ class CalendarAgent:
                     context += f"Attendees: {', '.join(attendee_names)}\n"
             
             # AI prompt for insights
-            prompt = f"""Analyze this meeting and provide 2-3 brief, actionable insights:
-
-{context}
-
-Provide insights about:
-1. Meeting type and purpose
-2. Key preparation points
-3. Potential talking points or questions
-
-Keep each insight to 1-2 sentences. Be specific and actionable."""
+            prompt = build_meeting_insights_prompt(context)
 
             # Get AI response
             response = self.llm_client.get_response(prompt)
