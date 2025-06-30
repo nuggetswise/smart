@@ -8,7 +8,7 @@ Pillow>=10.0.0
 easyocr>=1.7.0
 
 # LLM and AI
-groq>=0.28.0
+groq>=0.4.0
 google-generativeai>=0.3.0
 openai>=1.0.0
 
@@ -18,8 +18,9 @@ serpapi>=0.1.5
 
 # Google Calendar Integration
 google-auth>=2.23.0
-google-auth-oauthlib>=1.1.0
-google-api-python-client>=2.108.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+google-api-python-client>=2.0.0
 gcsa>=2.0.0
 
 # Data Processing and Storage

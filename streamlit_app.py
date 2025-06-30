@@ -1,3 +1,6 @@
+"""
+SmartDesk AI - Intelligent Calendar Management and AI Assistant
+"""
 import streamlit as st
 from core.chat_router import ChatRouter
 from ui.chat_interface import render_chat_interface
@@ -6,9 +9,14 @@ import os
 from dotenv import load_dotenv
 import json
 from datetime import datetime
+from core.oauth_handler import show_connect_calendar_button, show_user_info, is_user_authenticated
+from components.style import apply_custom_style
 
 # Load environment variables
 load_dotenv()
+
+# Apply custom styling
+apply_custom_style()
 
 # Page configuration
 st.set_page_config(
@@ -17,102 +25,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Enhanced CSS for modern UI
-st.markdown("""
-<style>
-    .main {
-        padding: 0;
-    }
-    .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        margin: 1rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    .stTextArea > div > div > textarea {
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-    }
-    .stButton > button {
-        border-radius: 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 0.5rem 2rem;
-        font-weight: 600;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    .status-indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: pulse 2s infinite;
-    }
-    .status-healthy {
-        background-color: #4CAF50;
-        box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-    }
-    .status-unhealthy {
-        background-color: #f44336;
-        box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
-    }
-    .status-unknown {
-        background-color: #ff9800;
-        box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
-    }
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
-    }
-    .notification-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        color: white;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .quick-action-btn {
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 10px;
-        padding: 0.5rem 1rem;
-        color: white;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .quick-action-btn:hover {
-        background: rgba(255,255,255,0.3);
-        transform: translateY(-2px);
-    }
-    .stats-card {
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    .sidebar-section {
-        background: rgba(255,255,255,0.05);
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-</style>
-""", unsafe_allow_html=True)
 
 def initialize_session_state():
     """Initialize session state variables."""
@@ -380,19 +292,19 @@ def render_enhanced_sidebar():
     # Model Selection Section
     st.markdown("### 🤖 LLM Model")
     model_options = {
-        "Groq - Gemma2 9B (Primary)": "gemma2-9b-it",
-        "Groq - Llama 3.3 70B": "llama-3.3-70b-versatile",
-        "Groq - Llama 3.1 8B Instant": "llama-3.1-8b-instant",
-        "Gemini 2.0 Flash (Fallback)": "gemini-2.0-flash-exp",
-        "OpenAI GPT-3.5": "gpt-3.5-turbo",
-        "OpenAI GPT-4o": "gpt-4o"
+        "Groq - Gemma2-9B": "gemma2-9b-it",
+        "Groq - Llama3.3-70B": "llama-3.3-70b-versatile", 
+        "Gemini - Gemma3N": "gemma-3n-e2b-it",
+        "OpenAI - GPT-3.5": "gpt-3.5-turbo",
+        "OpenAI - GPT-4": "gpt-4o",
+        "Ollama - Local": "mistral:latest"
     }
     
     selected_model = st.selectbox(
         "Choose your AI model:",
         options=list(model_options.keys()),
-        index=0,
-        help="Select the AI model for responses. Groq models are fastest, Gemini is most cost-effective."
+        index=0,  # Default to Gemini
+        help="Select the AI model for responses. Gemini is most cost-effective and currently working."
     )
     
     # Store selected model in session state

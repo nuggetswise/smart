@@ -8,17 +8,47 @@ import os
 import json
 import pytz
 from gcsa.event import Event
+from google.oauth2.credentials import Credentials
 
 class CalendarTool:
     """
     Calendar agent for polling and monitoring Google Calendar events.
     """
-    def __init__(self):
+    def __init__(self, user_credentials=None):
         self.credentials_available = False
         self.error_message = "Unknown error"
         self.calendar = None
+        self.user_credentials = user_credentials
         
-        # Check for credentials in multiple locations
+        # Try to initialize calendar
+        self._initialize_calendar()
+    
+    def _initialize_calendar(self):
+        """Initialize calendar with available credentials"""
+        # First, try OAuth credentials from session state
+        if self.user_credentials:
+            try:
+                # Create credentials object from OAuth data
+                credentials = Credentials(
+                    token=self.user_credentials['token'],
+                    refresh_token=self.user_credentials.get('refresh_token'),
+                    token_uri=self.user_credentials['token_uri'],
+                    client_id=self.user_credentials['client_id'],
+                    client_secret=self.user_credentials['client_secret'],
+                    scopes=self.user_credentials['scopes']
+                )
+                
+                # Initialize calendar with OAuth credentials
+                self.calendar = GoogleCalendar(credentials=credentials)
+                self.credentials_available = True
+                print(f"✅ Calendar tool initialized with OAuth for {self.user_credentials.get('user_email', 'Unknown user')}")
+                return
+                
+            except Exception as e:
+                print(f"❌ OAuth calendar initialization failed: {e}")
+                self.error_message = str(e)
+        
+        # Fallback to file-based credentials (for backward compatibility)
         credential_paths = [
             'credentials.json',
             'token.json',
@@ -36,18 +66,23 @@ class CalendarTool:
                 break
         
         if not credentials_found:
-            self.error_message = "No credential files found. Please set up Google Calendar API credentials."
+            self.error_message = "No credential files found and no OAuth credentials available. Please connect your Google Calendar."
             return
         
         try:
-            # Try to initialize Google Calendar
+            # Try to initialize Google Calendar with file credentials
             self.calendar = GoogleCalendar()
             self.credentials_available = True
-            print("Calendar tool initialized successfully")
+            print("Calendar tool initialized successfully with file credentials")
         except Exception as e:
             self.credentials_available = False
             self.error_message = str(e)
             print(f"Calendar initialization failed: {e}")
+    
+    def update_credentials(self, user_credentials):
+        """Update calendar tool with new user credentials"""
+        self.user_credentials = user_credentials
+        self._initialize_calendar()
     
     def _get_timezone_aware_now(self):
         """Get timezone-aware current time."""

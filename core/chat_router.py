@@ -16,6 +16,7 @@ import os
 import PyPDF2
 import io
 from datetime import datetime, timedelta
+from core.oauth_handler import get_user_credentials, is_user_authenticated, show_connect_calendar_button, show_user_info, handle_oauth_callback
 
 class ChatRouter:
     """
@@ -73,6 +74,19 @@ class ChatRouter:
         """
         Process user message and optional file upload, return agent response.
         """
+        # Handle OAuth callback first
+        if handle_oauth_callback():
+            return "Calendar connected successfully!"
+        
+        # Check if user is authenticated for calendar features
+        if not is_user_authenticated() and self._is_calendar_related(message):
+            return "Please connect your Google Calendar first to use calendar features."
+        
+        # Update calendar tool with current user credentials
+        user_credentials = get_user_credentials()
+        if user_credentials and self.calendar_tool.user_credentials != user_credentials:
+            self.calendar_tool.update_credentials(user_credentials)
+        
         # Handle file upload first
         if uploaded_file:
             return self._handle_file_upload(uploaded_file, message)
@@ -796,6 +810,14 @@ Format your response with clear sections and bullet points. Be specific and acti
             
         except Exception as e:
             return f"Error handling time query: {str(e)}"
+
+    def _is_calendar_related(self, message: str) -> bool:
+        """Check if message is related to calendar functionality."""
+        calendar_keywords = [
+            'schedule', 'meeting', 'calendar', 'appointment', 'event',
+            'book', 'set up', 'meet with', 'call', 'reminder'
+        ]
+        return any(keyword in message.lower() for keyword in calendar_keywords)
 
 def route_input(message, files=None):
     # TODO: Implement intent detection and routing
