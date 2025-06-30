@@ -15,7 +15,7 @@ import json
 import os
 import PyPDF2
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class ChatRouter:
     """
@@ -305,6 +305,53 @@ class ChatRouter:
     def _handle_conversation(self, message: str) -> str:
         """Handle regular conversation with LLM and context."""
         try:
+            # Check for meeting scheduling intent first
+            scheduling_keywords = ['schedule', 'book', 'set up', 'meet with', 'appointment', 'call']
+            is_scheduling_request = any(keyword in message.lower() for keyword in scheduling_keywords)
+            
+            if is_scheduling_request:
+                # Try to extract meeting details and schedule
+                try:
+                    # Extract attendee email
+                    import re
+                    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+                    emails = re.findall(email_pattern, message)
+                    
+                    if emails:
+                        attendee_email = emails[0]
+                        
+                        # Extract time information
+                        time_info = self._extract_time_from_message(message)
+                        
+                        # Create meeting title
+                        meeting_title = self._generate_meeting_title(message, attendee_email)
+                        
+                        # Create the calendar event
+                        event_result = self.calendar_tool.add_event(
+                            summary=meeting_title,
+                            date=time_info['date'],
+                            time=time_info['time'],
+                            attendees=[attendee_email],
+                            location="Google Meet",
+                            description=f"Meeting scheduled via SmartDesk AI"
+                        )
+                        
+                        if event_result:
+                            response = f"✅ I've scheduled a meeting with {attendee_email} for {time_info['formatted_time']}. The meeting has been added to your calendar and an invitation has been sent."
+                        else:
+                            response = f"❌ Failed to schedule the meeting. Please try again."
+                    else:
+                        response = "❌ I couldn't find an email address in your request. Please provide the attendee's email address to schedule the meeting."
+                    
+                    # Store in memory
+                    self.memory.add_message("user", message)
+                    self.memory.add_message("assistant", response)
+                    return response
+                    
+                except Exception as e:
+                    # If scheduling fails, fall back to regular conversation
+                    print(f"Scheduling failed, falling back to conversation: {e}")
+            
             # Get conversation context from memory
             context = self.memory.get_recent_messages(10)
             
@@ -328,6 +375,77 @@ class ChatRouter:
             
         except Exception as e:
             return f"Error processing message: {str(e)}"
+    
+    def _extract_time_from_message(self, message: str) -> dict:
+        """Extract time information from natural language message."""
+        try:
+            # Get current time info
+            current_time_info = self.time_tool.get_time_in_toronto()
+            
+            # Simple time parsing - look for common patterns
+            message_lower = message.lower()
+            
+            # Default to tomorrow at 1pm if no specific time found
+            date_str = None
+            time_str = None
+            formatted_time = "tomorrow at 1:00 PM EST"
+            
+            # Look for "tomorrow" + time
+            if "tomorrow" in message_lower:
+                # Get tomorrow's date
+                from datetime import datetime, timedelta
+                tomorrow = datetime.now() + timedelta(days=1)
+                date_str = tomorrow.strftime('%Y-%m-%d')
+                
+                if "1pm" in message_lower or "1 pm" in message_lower:
+                    time_str = "13:00"
+                    formatted_time = "tomorrow at 1:00 PM EST"
+                elif "2pm" in message_lower or "2 pm" in message_lower:
+                    time_str = "14:00"
+                    formatted_time = "tomorrow at 2:00 PM EST"
+                elif "3pm" in message_lower or "3 pm" in message_lower:
+                    time_str = "15:00"
+                    formatted_time = "tomorrow at 3:00 PM EST"
+                # Add more time patterns as needed
+            
+            # If no specific time found, use default
+            if not date_str or not time_str:
+                from datetime import datetime, timedelta
+                tomorrow = datetime.now() + timedelta(days=1)
+                date_str = tomorrow.strftime('%Y-%m-%d')
+                time_str = "13:00"
+                formatted_time = "tomorrow at 1:00 PM EST"
+            
+            return {
+                'date': date_str,
+                'time': time_str,
+                'formatted_time': formatted_time
+            }
+            
+        except Exception as e:
+            # Fallback to default time
+            from datetime import datetime, timedelta
+            tomorrow = datetime.now() + timedelta(days=1)
+            return {
+                'date': tomorrow.strftime('%Y-%m-%d'),
+                'time': "13:00",
+                'formatted_time': "tomorrow at 1:00 PM EST"
+            }
+    
+    def _generate_meeting_title(self, message: str, attendee_email: str) -> str:
+        """Generate a meeting title from the message and attendee."""
+        # Extract name from email
+        name = attendee_email.split('@')[0]
+        
+        # Look for meeting purpose in message
+        if "discuss" in message.lower():
+            return f"Discussion with {name}"
+        elif "review" in message.lower():
+            return f"Review with {name}"
+        elif "call" in message.lower():
+            return f"Call with {name}"
+        else:
+            return f"Meeting with {name}"
     
     def _get_pending_file_content(self) -> Optional[str]:
         """Get content from pending file if it exists."""
@@ -366,6 +484,40 @@ You are a helpful, intelligent AI assistant that provides clear, well-structured
 **CURRENT TIME:** {current_time_str}
 
 **IMPORTANT:** You have access to real-time, accurate time information. When users ask about current time, date, or timezone information, you can provide accurate, up-to-the-moment information. Do not rely on potentially outdated information from search results for time queries.
+
+**MEETING SCHEDULING CAPABILITIES:**
+When users ask to schedule meetings or appointments, you can actually create calendar events. Here's how to handle scheduling requests:
+
+1. **Detect scheduling intent** - Look for phrases like:
+   - "schedule a meeting with [person]"
+   - "book an appointment"
+   - "set up a call"
+   - "meet with [person]"
+   - "schedule [time] meeting"
+
+2. **Extract meeting details** from the user's request:
+   - Attendee email(s)
+   - Date and time (support natural language like "tomorrow at 2pm EST")
+   - Meeting title/summary
+   - Duration (default to 30 minutes if not specified)
+   - Location (default to "Google Meet" if not specified)
+
+3. **Create the meeting** using the calendar tool:
+   - Use the calendar_tool.add_event() method
+   - Provide all extracted details
+   - Confirm the meeting was created successfully
+
+4. **Respond with confirmation** including:
+   - Meeting details (title, time, attendees)
+   - Confirmation that it was scheduled
+   - Any relevant follow-up information
+
+**Example scheduling flow:**
+User: "Schedule a meeting with john@example.com tomorrow at 2pm EST"
+Assistant: [Extract details and create event via calendar_tool.add_event()]
+Response: "✅ I've scheduled a meeting with john@example.com for tomorrow at 2:00 PM EST. The meeting has been added to your calendar and an invitation has been sent."
+
+**IMPORTANT:** When scheduling meetings, always use the actual calendar tool to create the event, don't just respond as if you did it.
 
 """
         

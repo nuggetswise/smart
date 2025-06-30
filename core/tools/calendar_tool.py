@@ -7,6 +7,7 @@ import streamlit as st
 import os
 import json
 import pytz
+from gcsa.event import Event
 
 class CalendarTool:
     """
@@ -401,6 +402,119 @@ class CalendarTool:
                 status["connection_error"] = str(e)
         
         return status
+    
+    def add_event(self, summary: str, date: str, time: str, description: str = "", location: str = "", attendees: list = None, duration_minutes: int = 60):
+        """
+        Add a new event to the calendar.
+        
+        Args:
+            summary: Event title/summary
+            date: Date in YYYY-MM-DD format
+            time: Time in HH:MM format
+            description: Event description (optional)
+            location: Event location (optional)
+            attendees: List of attendee email addresses (optional)
+            duration_minutes: Meeting duration in minutes (default 60)
+        """
+        if not self.credentials_available:
+            raise Exception(f"Calendar not available: {self.error_message}")
+        
+        try:
+            from datetime import datetime
+            import pytz
+            
+            # Parse date and time
+            date_time_str = f"{date} {time}"
+            start_dt = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M')
+            
+            # Make timezone-aware (assuming local timezone)
+            local_tz = pytz.timezone('America/Toronto')  # Adjust as needed
+            start_dt = local_tz.localize(start_dt)
+            
+            # End time based on duration
+            end_dt = start_dt + timedelta(minutes=duration_minutes)
+            
+            # Create event using gcsa Event class
+            event = Event(
+                summary=summary,
+                description=description,
+                location=location,
+                start=start_dt,
+                end=end_dt,
+                attendees=attendees if attendees else None
+            )
+            
+            # Add event to calendar
+            created_event = self.calendar.add_event(event)
+            
+            print(f"✅ Event created: {created_event.summary}")
+            return {
+                'id': getattr(created_event, 'id', 'unknown'),
+                'summary': created_event.summary,
+                'start': created_event.start.isoformat() if hasattr(created_event.start, 'isoformat') else str(created_event.start),
+                'end': created_event.end.isoformat() if hasattr(created_event.end, 'isoformat') else str(created_event.end),
+                'htmlLink': getattr(created_event, 'html_link', 'No link available'),
+                'success': True
+            }
+            
+        except Exception as e:
+            print(f"❌ Error creating event: {e}")
+            raise Exception(f"Failed to create event: {str(e)}")
+    
+    def schedule_1on1(self, attendee_email: str, date: str = None, time: str = None, duration_minutes: int = 30):
+        """
+        Schedule a 1-on-1 meeting with the specified attendee.
+        
+        Args:
+            attendee_email: Email address of the attendee
+            date: Date in YYYY-MM-DD format (defaults to today)
+            time: Time in HH:MM format (defaults to next available slot)
+            duration_minutes: Meeting duration in minutes (default 30)
+        """
+        if not self.credentials_available:
+            raise Exception(f"Calendar not available: {self.error_message}")
+        
+        try:
+            from datetime import datetime, timedelta
+            import pytz
+            
+            # Use today if no date specified
+            if not date:
+                date = datetime.now().strftime('%Y-%m-%d')
+            
+            # Use next available time if no time specified
+            if not time:
+                # Find next available 30-minute slot
+                now = datetime.now()
+                if now.hour < 9:  # Before 9 AM
+                    time = "09:00"
+                elif now.hour >= 17:  # After 5 PM
+                    # Schedule for tomorrow at 9 AM
+                    tomorrow = now + timedelta(days=1)
+                    date = tomorrow.strftime('%Y-%m-%d')
+                    time = "09:00"
+                else:
+                    # Find next 30-minute slot
+                    next_slot = now.replace(minute=0, second=0, microsecond=0)
+                    next_slot += timedelta(hours=1)  # Start with next hour
+                    time = next_slot.strftime('%H:%M')
+            
+            # Create meeting title
+            summary = f"1:1 with {attendee_email.split('@')[0]}"
+            
+            # Add the event (without duration_minutes parameter)
+            return self.add_event(
+                summary=summary,
+                date=date,
+                time=time,
+                description="1-on-1 meeting",
+                attendees=[attendee_email],
+                duration_minutes=duration_minutes
+            )
+            
+        except Exception as e:
+            print(f"❌ Error scheduling 1-on-1: {e}")
+            raise Exception(f"Failed to schedule 1-on-1: {str(e)}")
 
 def poll():
     """
