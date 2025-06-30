@@ -89,6 +89,8 @@ def handle_user_input():
         # Route based on selected tool
         if selected_tool == 'Search the web':
             response = st.session_state.chat_router._handle_web_search(user_message)
+        elif selected_tool == 'Deep Thinking':
+            response = st.session_state.chat_router._handle_deep_thinking(user_message)
         else:
             response = st.session_state.chat_router.process_user_message(
                 user_message, 

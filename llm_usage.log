@@ -186,3 +186,53 @@
 {"timestamp": "2025-06-30T12:00:39.082633", "provider": "gemini", "model": "gemma2-9b-it", "usage": {"total_tokens": 687}, "cost_usd": 0.00010305}
 {"timestamp": "2025-06-30T17:46:04.784781", "provider": "groq", "model": "gemma2-9b-it", "usage": {}, "cost_usd": 0.0}
 {"timestamp": "2025-06-30T17:46:06.608676", "provider": "gemini", "model": "gemma2-9b-it", "usage": {"total_tokens": 670}, "cost_usd": 0.0001005}
+{"timestamp": "2025-06-30T19:08:17.663588", "provider": "groq", "model": null, "usage": {"prompt_tokens": 621, "completion_tokens": 751, "total_tokens": 1372}, "cost_usd": 0.00037044000000000004}
+{"timestamp": "2025-06-30T19:14:54.751375", "provider": "groq", "model": null, "usage": {"prompt_tokens": 11, "completion_tokens": 16, "total_tokens": 27}, "cost_usd": 7.2900000000000005e-06}
+{"timestamp": "2025-06-30T19:14:54.918911", "provider": "groq", "model": null, "usage": {"prompt_tokens": 11, "completion_tokens": 15, "total_tokens": 26}, "cost_usd": 7.02e-06}
+{"timestamp": "2025-06-30T19:15:31.562335", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 499, "total_tokens": 511}, "cost_usd": 0.00013797}
+{"timestamp": "2025-06-30T19:15:32.506670", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 437, "total_tokens": 449}, "cost_usd": 0.00012123000000000002}
+{"timestamp": "2025-06-30T19:15:33.452758", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 446, "total_tokens": 458}, "cost_usd": 0.00012366000000000002}
+{"timestamp": "2025-06-30T19:15:34.329925", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 410, "total_tokens": 422}, "cost_usd": 0.00011394000000000001}
+{"timestamp": "2025-06-30T19:16:09.478976", "provider": "gemini", "model": null, "usage": {"total_tokens": 1093}, "cost_usd": 0.00016395}
+{"timestamp": "2025-06-30T19:16:34.889697", "provider": "openai", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:16:34.910845", "provider": "ollama", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:17:13.925827", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 397, "total_tokens": 409}, "cost_usd": 0.00011043000000000001}
+{"timestamp": "2025-06-30T19:17:22.228916", "provider": "groq", "model": null, "usage": {"prompt_tokens": 11, "completion_tokens": 16, "total_tokens": 27}, "cost_usd": 7.2900000000000005e-06}
+{"timestamp": "2025-06-30T19:17:22.415066", "provider": "groq", "model": null, "usage": {"prompt_tokens": 11, "completion_tokens": 15, "total_tokens": 26}, "cost_usd": 7.02e-06}
+{"timestamp": "2025-06-30T19:17:43.824497", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1343, "completion_tokens": 975, "total_tokens": 2318}, "cost_usd": 0.0006258600000000001}
+{"timestamp": "2025-06-30T19:20:44.512829", "provider": "gemini", "model": null, "usage": {"total_tokens": 24}, "cost_usd": 3.6e-06}
+{"timestamp": "2025-06-30T19:20:44.650463", "provider": "openai", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:20:44.662826", "provider": "ollama", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:20:44.668111", "provider": "ollama", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:21:01.986786", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1012, "completion_tokens": 297, "total_tokens": 1309}, "cost_usd": 0.00035343000000000006}
+{"timestamp": "2025-06-30T19:21:14.107543", "provider": "groq", "model": null, "usage": {"prompt_tokens": 979, "completion_tokens": 507, "total_tokens": 1486}, "cost_usd": 0.00040122}
+{"timestamp": "2025-06-30T19:21:16.242029", "provider": "groq", "model": null, "usage": {"prompt_tokens": 981, "completion_tokens": 611, "total_tokens": 1592}, "cost_usd": 0.00042984000000000007}
+{"timestamp": "2025-06-30T19:21:18.701345", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1054, "completion_tokens": 647, "total_tokens": 1701}, "cost_usd": 0.00045927000000000007}
+{"timestamp": "2025-06-30T19:21:52.504260", "provider": "groq", "model": null, "usage": {"prompt_tokens": 778, "completion_tokens": 283, "total_tokens": 1061}, "cost_usd": 0.00028647000000000004}
+{"timestamp": "2025-06-30T19:21:54.774926", "provider": "groq", "model": null, "usage": {"prompt_tokens": 987, "completion_tokens": 605, "total_tokens": 1592}, "cost_usd": 0.00042984000000000007}
+{"timestamp": "2025-06-30T19:21:57.523316", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1102, "completion_tokens": 793, "total_tokens": 1895}, "cost_usd": 0.00051165}
+{"timestamp": "2025-06-30T19:22:05.744779", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 463, "total_tokens": 475}, "cost_usd": 0.00012825}
+{"timestamp": "2025-06-30T19:22:06.586110", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 392, "total_tokens": 404}, "cost_usd": 0.00010908}
+{"timestamp": "2025-06-30T19:22:30.333687", "provider": "gemini", "model": null, "usage": {"total_tokens": 1010}, "cost_usd": 0.0001515}
+{"timestamp": "2025-06-30T19:22:51.255140", "provider": "gemini", "model": null, "usage": {"total_tokens": 896}, "cost_usd": 0.0001344}
+{"timestamp": "2025-06-30T19:24:29.158080", "provider": "openai", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:24:29.242002", "provider": "ollama", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:24:29.447247", "provider": "openai", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:24:29.452520", "provider": "ollama", "model": null, "usage": {}, "cost_usd": 0.0}
+{"timestamp": "2025-06-30T19:24:46.186595", "provider": "gemini", "model": null, "usage": {"total_tokens": 31}, "cost_usd": 4.65e-06}
+{"timestamp": "2025-06-30T19:26:08.410869", "provider": "openai", "model": null, "usage": {"prompt_tokens": 8, "completion_tokens": 10, "total_tokens": 18, "prompt_tokens_details": {"cached_tokens": 0, "audio_tokens": 0}, "completion_tokens_details": {"reasoning_tokens": 0, "audio_tokens": 0, "accepted_prediction_tokens": 0, "rejected_prediction_tokens": 0}}, "cost_usd": 9e-06}
+{"timestamp": "2025-06-30T19:26:09.228613", "provider": "openai", "model": null, "usage": {"prompt_tokens": 8, "completion_tokens": 9, "total_tokens": 17, "prompt_tokens_details": {"cached_tokens": 0, "audio_tokens": 0}, "completion_tokens_details": {"reasoning_tokens": 0, "audio_tokens": 0, "accepted_prediction_tokens": 0, "rejected_prediction_tokens": 0}}, "cost_usd": 8.5e-06}
+{"timestamp": "2025-06-30T19:26:47.619809", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 436, "total_tokens": 448}, "cost_usd": 0.00012096000000000001}
+{"timestamp": "2025-06-30T19:26:48.617322", "provider": "groq", "model": null, "usage": {"prompt_tokens": 12, "completion_tokens": 467, "total_tokens": 479}, "cost_usd": 0.00012933}
+{"timestamp": "2025-06-30T19:26:57.429699", "provider": "groq", "model": null, "usage": {"prompt_tokens": 751, "completion_tokens": 228, "total_tokens": 979}, "cost_usd": 0.00026433}
+{"timestamp": "2025-06-30T19:26:59.703871", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1000, "completion_tokens": 584, "total_tokens": 1584}, "cost_usd": 0.00042768}
+{"timestamp": "2025-06-30T19:27:02.064731", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1102, "completion_tokens": 595, "total_tokens": 1697}, "cost_usd": 0.00045819000000000003}
+{"timestamp": "2025-06-30T19:28:57.522777", "provider": "groq", "model": null, "usage": {"prompt_tokens": 2204, "completion_tokens": 671, "total_tokens": 2875}, "cost_usd": 0.00077625}
+{"timestamp": "2025-06-30T19:29:26.121641", "provider": "groq", "model": null, "usage": {"prompt_tokens": 3254, "completion_tokens": 491, "total_tokens": 3745}, "cost_usd": 0.0010111500000000002}
+{"timestamp": "2025-06-30T19:35:16.664331", "provider": "groq", "model": null, "usage": {"prompt_tokens": 521, "completion_tokens": 352, "total_tokens": 873}, "cost_usd": 0.00023571}
+{"timestamp": "2025-06-30T19:36:01.145598", "provider": "groq", "model": null, "usage": {"prompt_tokens": 702, "completion_tokens": 335, "total_tokens": 1037}, "cost_usd": 0.00027999}
+{"timestamp": "2025-06-30T19:38:49.662856", "provider": "groq", "model": null, "usage": {"prompt_tokens": 2865, "completion_tokens": 305, "total_tokens": 3170}, "cost_usd": 0.0008559}
+{"timestamp": "2025-06-30T19:40:04.107073", "provider": "groq", "model": null, "usage": {"prompt_tokens": 2199, "completion_tokens": 274, "total_tokens": 2473}, "cost_usd": 0.0006677100000000001}
+{"timestamp": "2025-06-30T19:40:28.074559", "provider": "groq", "model": null, "usage": {"prompt_tokens": 3375, "completion_tokens": 530, "total_tokens": 3905}, "cost_usd": 0.0010543500000000001}
+{"timestamp": "2025-06-30T19:41:03.299866", "provider": "groq", "model": null, "usage": {"prompt_tokens": 2927, "completion_tokens": 266, "total_tokens": 3193}, "cost_usd": 0.0008621100000000001}
+{"timestamp": "2025-06-30T19:41:27.153453", "provider": "groq", "model": null, "usage": {"prompt_tokens": 1806, "completion_tokens": 321, "total_tokens": 2127}, "cost_usd": 0.0005742900000000001}

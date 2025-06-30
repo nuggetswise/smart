@@ -13,7 +13,7 @@ class Summarizer:
         Summarize long-form text using the LLM.
         """
         prompt = build_summarization_prompt(text)
-        return generate_response(prompt, stream=False)
+        return generate_response(prompt, stream=False, mode="chat")
 
 def summarize(text):
     """

@@ -83,12 +83,21 @@ class LLMClient:
         
         print(f"🔧 Available LLM providers: {self.providers}")
     
-    def get_response(self, prompt: str, model: str = None) -> str:
+    def get_response(self, prompt: str, model: str = None, mode: str = "chat") -> str:
         """
         Generate a response using multiple fallback providers.
         Returns the first successful response or error message.
+        
+        Args:
+            prompt: The input prompt
+            model: The model to use (optional)
+            mode: The mode of operation ("chat" or "deep_thinking")
         """
         print(f"🤖 Attempting to get response from providers: {self.providers}")
+        
+        # Set max tokens based on mode
+        max_tokens = 4096 if mode == "deep_thinking" else 2048
+        print(f"📝 Using max_tokens: {max_tokens} for mode: {mode}")
         
         # Smart model selection - if model is a Groq model but Groq is not available, use appropriate default
         if model and model.startswith(('gemma', 'llama')) and 'groq' not in self.providers:
@@ -121,7 +130,7 @@ class LLMClient:
                                     break
                             
                             if self.groq_client:
-                                response, usage, cost = self._call_groq(prompt, model)
+                                response, usage, cost = self._call_groq(prompt, model, max_tokens)
                                 self._log_usage('groq', model, usage, cost)
                                 if response and response != '[LLM unavailable]':
                                     print(f"✅ Groq response successful")
@@ -133,7 +142,7 @@ class LLMClient:
                                 print(f"❌ Groq client not available")
                                 break
                         elif provider == 'gemini' and self.gemini_api_key:
-                            response, usage, cost = self._call_gemini(prompt, model)
+                            response, usage, cost = self._call_gemini(prompt, model, max_tokens)
                             self._log_usage('gemini', model, usage, cost)
                             if response and response != '[LLM unavailable]':
                                 print(f"✅ Gemini response successful")
@@ -142,7 +151,7 @@ class LLMClient:
                                 print(f"❌ Gemini returned unavailable response")
                                 break
                         elif provider == 'openai' and self.openai_api_key:
-                            response, usage, cost = self._call_openai(prompt, model)
+                            response, usage, cost = self._call_openai(prompt, model, max_tokens)
                             self._log_usage('openai', model, usage, cost)
                             if response and response != '[LLM unavailable]':
                                 print(f"✅ OpenAI response successful")
@@ -151,7 +160,7 @@ class LLMClient:
                                 print(f"❌ OpenAI returned unavailable response")
                                 break
                         elif provider == 'ollama':
-                            response, usage, cost = self._call_ollama(prompt, model)
+                            response, usage, cost = self._call_ollama(prompt, model, max_tokens)
                             self._log_usage('ollama', model, usage, cost)
                             if response and response != '[LLM unavailable]':
                                 print(f"✅ Ollama response successful")
@@ -182,30 +191,38 @@ class LLMClient:
         print(f"❌ {error_summary}")
         return '[LLM unavailable - all providers failed]'
 
-    def stream_response(self, prompt: str, model: str = None):
+    def stream_response(self, prompt: str, model: str = None, mode: str = "chat"):
         """
         Generate a streaming response. Currently supports Ollama and Groq streaming.
+        
+        Args:
+            prompt: The input prompt
+            model: The model to use (optional)
+            mode: The mode of operation ("chat" or "deep_thinking")
         """
+        # Set max tokens based on mode
+        max_tokens = 4096 if mode == "deep_thinking" else 2048
+        
         # Try Groq streaming first
         if self.groq_client:
             try:
-                yield from self._stream_groq(prompt, model)
+                yield from self._stream_groq(prompt, model, max_tokens)
                 return
             except Exception as e:
                 print(f"Groq streaming failed: {e}")
         
         # Try Ollama streaming
         try:
-            yield from self._stream_ollama(prompt, model)
+            yield from self._stream_ollama(prompt, model, max_tokens)
             return
         except Exception:
             pass
         
         # Fallback to non-streaming for other providers
-        response = self.get_response(prompt, model)
+        response = self.get_response(prompt, model, mode)
         yield response
 
-    def _call_groq(self, prompt: str, model: str = None):
+    def _call_groq(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Call Groq API using official SDK."""
         model = model or 'gemma2-9b-it'
         
@@ -219,7 +236,7 @@ class LLMClient:
                     }
                 ],
                 temperature=0.7,
-                max_tokens=2048,
+                max_tokens=max_tokens,
                 top_p=0.9,
                 stream=False
             )
@@ -240,7 +257,7 @@ class LLMClient:
             print(f"Groq API error: {e}")
             return '[LLM unavailable]', {}, 0.0
 
-    def _stream_groq(self, prompt: str, model: str = None):
+    def _stream_groq(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Stream response from Groq using official SDK."""
         model = model or 'gemma2-9b-it'
         
@@ -254,7 +271,7 @@ class LLMClient:
                     }
                 ],
                 temperature=0.7,
-                max_tokens=2048,
+                max_tokens=max_tokens,
                 top_p=0.9,
                 stream=True
             )
@@ -267,7 +284,7 @@ class LLMClient:
             print(f"Groq streaming error: {e}")
             yield '[LLM unavailable]'
 
-    def _call_gemini(self, prompt: str, model: str = None):
+    def _call_gemini(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Call Google Gemini API."""
         # Use Gemini-specific model names
         if model and model.startswith('gemma'):  # If it's a Groq model, use Gemini default
@@ -280,7 +297,8 @@ class LLMClient:
             "generationConfig": {
                 "temperature": 0.7,
                 "topP": 0.9,
-                "topK": 40
+                "topK": 40,
+                "maxOutputTokens": max_tokens
             }
         }
         try:
@@ -310,7 +328,7 @@ class LLMClient:
             print(f"❌ Gemini API exception: {e}")
             return '[LLM unavailable]', {}, 0.0
 
-    def _call_openai(self, prompt: str, model: str = None):
+    def _call_openai(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Call OpenAI API."""
         # Use OpenAI-specific model names
         if model and (model.startswith('gemma') or model.startswith('llama')):  # If it's a Groq model, use OpenAI default
@@ -320,7 +338,8 @@ class LLMClient:
         data = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
-            "stream": False
+            "stream": False,
+            "max_tokens": max_tokens
         }
         try:
             # Increase timeout and add retry logic
@@ -346,7 +365,7 @@ class LLMClient:
             print(f"❌ OpenAI API exception: {e}")
             return '[LLM unavailable]', {}, 0.0
 
-    def _call_ollama(self, prompt: str, model: str = None):
+    def _call_ollama(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Call Ollama API."""
         # Use Ollama-specific model names
         if model and (model.startswith('gemma') or model.startswith('llama')):  # If it's a Groq model, use Ollama default
@@ -357,7 +376,10 @@ class LLMClient:
             resp = requests.post(f"{self.ollama_host}/api/generate", json={
                 "model": model,
                 "prompt": prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "num_predict": max_tokens
+                }
             }, timeout=120)  # Longer timeout for local model
             if resp.ok:
                 result = resp.json()
@@ -380,14 +402,17 @@ class LLMClient:
             print(f"❌ Ollama API exception: {e}")
             return '[LLM unavailable]', {}, 0.0
 
-    def _stream_ollama(self, prompt: str, model: str = None):
+    def _stream_ollama(self, prompt: str, model: str = None, max_tokens: int = 2048):
         """Stream response from Ollama."""
         model = model or self.ollama_model
         try:
             resp = requests.post(f"{self.ollama_host}/api/generate", json={
                 "model": model,
                 "prompt": prompt,
-                "stream": True
+                "stream": True,
+                "options": {
+                    "num_predict": max_tokens
+                }
             }, stream=True, timeout=30)
             for line in resp.iter_lines():
                 if line:
@@ -414,13 +439,19 @@ class LLMClient:
             print(f"Failed to log LLM usage: {e}")
 
 # Legacy function for backward compatibility
-def generate_response(prompt, model=None, stream=False):
+def generate_response(prompt, model=None, stream=False, mode="chat"):
     """
     Legacy function for backward compatibility.
     Returns a string for non-streaming, and a string (joined) for streaming.
+    
+    Args:
+        prompt: The input prompt
+        model: The model to use (optional)
+        stream: Whether to stream the response
+        mode: The mode of operation ("chat" or "deep_thinking")
     """
     client = LLMClient()
     if stream:
-        return ''.join(list(client.stream_response(prompt, model)))
+        return ''.join(list(client.stream_response(prompt, model, mode)))
     else:
-        return client.get_response(prompt, model) 
+        return client.get_response(prompt, model, mode) 

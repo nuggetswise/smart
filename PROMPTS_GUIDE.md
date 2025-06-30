@@ -78,19 +78,57 @@ core/
 ### 4. Web Search and Summarization Prompts
 
 #### `get_web_search_summary_prompt(web_results)`
-- **Purpose**: Summarizes web search results
+- **Purpose**: Enhanced web search summarization with productivity focus
 - **Usage**: After performing web searches
 - **Key Features**:
-  - Includes hyperlinks in markdown
-  - Provides concise summaries
-  - Maintains research assistant persona
+  - Structured response format with clear sections
+  - Key findings extraction (3-5 most important points)
+  - Source credibility assessment
+  - Actionable insights for busy professionals
+  - Next steps recommendations
+  - Professional formatting with hyperlinks
+
+#### `get_web_search_analysis_prompt(web_results, user_context)`
+- **Purpose**: Strategic analysis of web search results for decision-making
+- **Usage**: For complex research and strategic planning
+- **Key Features**:
+  - Executive summary with 2-3 sentence overview
+  - Trend analysis with supporting evidence
+  - Risk assessment with mitigation strategies
+  - Opportunity identification with action plans
+  - Strategic recommendations (3-5 actionable items)
+  - Implementation roadmap (immediate, short-term, long-term)
+
+#### `get_web_search_comparison_prompt(web_results, comparison_criteria)`
+- **Purpose**: Comparative analysis of options and alternatives
+- **Usage**: For evaluating choices and making decisions
+- **Key Features**:
+  - Options overview with clear descriptions
+  - Structured pros and cons analysis
+  - Clear recommendation with rationale
+  - Decision matrix with scoring system
+  - Objective analysis with source links
+
+#### `get_web_search_learning_prompt(web_results, learning_objective)`
+- **Purpose**: Educational content curation for skill development
+- **Usage**: For learning new skills and concepts
+- **Key Features**:
+  - Core concepts extraction and explanation
+  - Practical applications in real-world scenarios
+  - Step-by-step learning path
+  - Common mistakes to avoid
+  - Advanced topics for deeper exploration
+  - Curated additional resources
 
 #### `get_summarization_prompt(text)`
-- **Purpose**: General text summarization for productivity
+- **Purpose**: Enhanced text summarization for productivity and professional use
 - **Usage**: For long-form content summarization
 - **Key Features**:
-  - Concise, actionable summaries
-  - Productivity-focused approach
+  - Executive summary (2-3 sentences)
+  - Key points (3-5 bullet points)
+  - Action items (specific next steps)
+  - Important details (critical information to remember)
+  - Focus on decision-making relevance and professional implications
 
 ### 5. Conversation Context Prompts
 
@@ -164,8 +202,14 @@ core/
 - **Parameters**: Meeting context
 
 ### `build_web_search_prompt()`
-- **Purpose**: Builds web search summary prompts
-- **Parameters**: Web search results
+- **Purpose**: Builds web search prompts with enhanced analysis capabilities
+- **Parameters**: 
+  - `web_results`: Web search results to analyze
+  - `analysis_type`: Type of analysis ("auto", "summary", "analysis", "comparison", "learning")
+  - `user_context`: Additional context about user's needs
+  - `comparison_criteria`: Criteria for comparison analysis
+  - `learning_objective`: Learning objective for educational analysis
+- **Auto-detection**: Automatically detects analysis type based on query keywords
 
 ### `build_summarization_prompt()`
 - **Purpose**: Builds text summarization prompts
@@ -206,6 +250,31 @@ from core.prompts import build_meeting_prep_prompt
 
 prompt = build_meeting_prep_prompt(
     meeting_context="Meeting: Team Standup\nTime: 9:00 AM\nAttendees: John, Jane, Bob"
+)
+```
+
+### Web Search Analysis
+```python
+from core.prompts import build_web_search_prompt
+
+# Auto-detected comparison analysis
+prompt = build_web_search_prompt(
+    web_results="Search results about project management tools...",
+    analysis_type="auto"  # Will detect "comparison" from "vs" keywords
+)
+
+# Strategic analysis with user context
+prompt = build_web_search_prompt(
+    web_results="Market research data...",
+    analysis_type="analysis",
+    user_context="User is planning to launch a new product"
+)
+
+# Learning-focused analysis
+prompt = build_web_search_prompt(
+    web_results="Tutorial and guide content...",
+    analysis_type="learning",
+    learning_objective="Master Python web development"
 )
 ```
 

@@ -169,21 +169,202 @@ Keep each insight to 1-2 sentences. Be specific and actionable."""
 # =============================================================================
 
 def get_web_search_summary_prompt(web_results: str) -> str:
-    """Get prompt for summarizing web search results."""
-    return f"""You are a research assistant. Summarize the following web results for the user. Include hyperlinks in markdown.
+    """Get prompt for summarizing web search results with enhanced structure and productivity focus."""
+    return f"""You are a research assistant helping a busy professional. Analyze and summarize the following web search results to provide actionable insights.
 
-Web results:
+**Web Search Results:**
 {web_results}
 
-Summary:"""
+**Instructions:**
+1. **Key Findings**: Extract the 3-5 most important points from the search results
+2. **Source Evaluation**: Briefly assess the credibility of sources (authoritative websites, recent information, etc.)
+3. **Actionable Insights**: Provide specific, actionable takeaways for the user
+4. **Related Context**: Connect findings to productivity, business, or professional development
+5. **Next Steps**: Suggest follow-up actions or additional research if needed
+
+**Format your response as:**
+## 🔍 Key Findings
+- [Most important point 1]
+- [Most important point 2]
+- [Most important point 3]
+
+## 📊 Source Quality
+- [Brief assessment of source credibility]
+
+## 💡 Actionable Insights
+- [Specific, actionable takeaway 1]
+- [Specific, actionable takeaway 2]
+
+## 🚀 Next Steps
+- [Suggested follow-up action 1]
+- [Suggested follow-up action 2]
+
+**Include relevant hyperlinks in markdown format for sources. Be concise but comprehensive, focusing on what's most valuable for a busy professional.**"""
+
+def get_web_search_analysis_prompt(web_results: str, user_context: str = "") -> str:
+    """Get prompt for detailed web search analysis with user context."""
+    context_part = f"\n**User Context:** {user_context}\n" if user_context else ""
+    
+    return f"""You are a strategic research analyst helping a professional make informed decisions. Analyze the following web search results in the context of the user's needs.
+
+**Web Search Results:**
+{web_results}{context_part}
+
+**Analysis Framework:**
+1. **Executive Summary**: 2-3 sentence overview of findings
+2. **Trend Analysis**: Identify patterns, trends, or emerging themes
+3. **Risk Assessment**: Highlight potential risks, challenges, or concerns
+4. **Opportunity Identification**: Point out opportunities, advantages, or positive developments
+5. **Strategic Recommendations**: Provide 3-5 strategic recommendations
+6. **Implementation Roadmap**: Suggest a practical implementation approach
+
+**Format your response as:**
+## 📋 Executive Summary
+[Brief overview of key findings]
+
+## 📈 Trend Analysis
+- [Trend 1 with supporting evidence]
+- [Trend 2 with supporting evidence]
+
+## ⚠️ Risk Assessment
+- [Risk 1 with mitigation strategy]
+- [Risk 2 with mitigation strategy]
+
+## 🎯 Opportunities
+- [Opportunity 1 with action plan]
+- [Opportunity 2 with action plan]
+
+## 🎯 Strategic Recommendations
+1. **[Recommendation 1]** - [Brief rationale]
+2. **[Recommendation 2]** - [Brief rationale]
+3. **[Recommendation 3]** - [Brief rationale]
+
+## 🗺️ Implementation Roadmap
+- **Immediate (0-30 days):** [Actions]
+- **Short-term (1-3 months):** [Actions]
+- **Long-term (3-12 months):** [Actions]
+
+**Include source links and maintain a professional, strategic tone throughout.**"""
+
+def get_web_search_comparison_prompt(web_results: str, comparison_criteria: str = "") -> str:
+    """Get prompt for comparative analysis of web search results."""
+    criteria_part = f"\n**Comparison Criteria:** {comparison_criteria}\n" if comparison_criteria else ""
+    
+    return f"""You are a comparative analyst helping evaluate options and alternatives. Analyze the following web search results to provide a structured comparison.
+
+**Web Search Results:**
+{web_results}{criteria_part}
+
+**Comparison Framework:**
+1. **Options Overview**: Identify and list the main options/alternatives found
+2. **Criteria Analysis**: Evaluate each option against key criteria (cost, quality, time, risk, etc.)
+3. **Pros and Cons**: Balanced assessment of advantages and disadvantages
+4. **Recommendation**: Clear recommendation with rationale
+5. **Decision Matrix**: Simple scoring or ranking system
+
+**Format your response as:**
+## 🔍 Options Overview
+- **Option A:** [Brief description]
+- **Option B:** [Brief description]
+- **Option C:** [Brief description]
+
+## 📊 Comparative Analysis
+
+### Option A
+**Pros:**
+- [Advantage 1]
+- [Advantage 2]
+
+**Cons:**
+- [Disadvantage 1]
+- [Disadvantage 2]
+
+### Option B
+**Pros:**
+- [Advantage 1]
+- [Advantage 2]
+
+**Cons:**
+- [Disadvantage 1]
+- [Disadvantage 2]
+
+## 🎯 Recommendation
+**[Recommended Option]** - [Clear rationale with supporting evidence]
+
+## 📈 Decision Matrix
+| Criteria | Option A | Option B | Option C |
+|----------|----------|----------|----------|
+| Cost | [Score] | [Score] | [Score] |
+| Quality | [Score] | [Score] | [Score] |
+| Time | [Score] | [Score] | [Score] |
+
+**Provide objective analysis with clear reasoning and include source links.**"""
+
+def get_web_search_learning_prompt(web_results: str, learning_objective: str = "") -> str:
+    """Get prompt for educational/learning-focused web search results."""
+    objective_part = f"\n**Learning Objective:** {learning_objective}\n" if learning_objective else ""
+    
+    return f"""You are an educational content curator helping someone learn and develop new skills. Organize the following web search results into a structured learning resource.
+
+**Web Search Results:**
+{web_results}{objective_part}
+
+**Learning Framework:**
+1. **Core Concepts**: Extract fundamental concepts and principles
+2. **Practical Applications**: Show how concepts apply in real-world scenarios
+3. **Step-by-Step Guide**: Provide actionable learning steps
+4. **Common Mistakes**: Highlight pitfalls to avoid
+5. **Advanced Topics**: Identify areas for deeper exploration
+6. **Resources**: Curate additional learning materials
+
+**Format your response as:**
+## 🧠 Core Concepts
+- **[Concept 1]:** [Brief explanation]
+- **[Concept 2]:** [Brief explanation]
+- **[Concept 3]:** [Brief explanation]
+
+## 🛠️ Practical Applications
+- **Application 1:** [How to apply concept 1]
+- **Application 2:** [How to apply concept 2]
+
+## 📝 Step-by-Step Learning Path
+1. **[Step 1]** - [Description and resources]
+2. **[Step 2]** - [Description and resources]
+3. **[Step 3]** - [Description and resources]
+
+## ⚠️ Common Mistakes to Avoid
+- [Mistake 1 with explanation]
+- [Mistake 2 with explanation]
+
+## 🚀 Advanced Topics
+- [Advanced topic 1 for further study]
+- [Advanced topic 2 for further study]
+
+## 📚 Additional Resources
+- [Curated resource 1 with link]
+- [Curated resource 2 with link]
+
+**Make the content engaging, practical, and immediately applicable for skill development.**"""
 
 def get_summarization_prompt(text: str) -> str:
-    """Get prompt for general text summarization."""
-    return f"""Summarize the following text in a concise, actionable way for productivity:
+    """Get prompt for general text summarization with productivity focus."""
+    return f"""Summarize the following text in a concise, actionable way for productivity and professional use:
 
 {text}
 
-Summary:"""
+**Provide:**
+1. **Executive Summary** (2-3 sentences)
+2. **Key Points** (3-5 bullet points)
+3. **Action Items** (specific next steps)
+4. **Important Details** (critical information to remember)
+
+**Focus on:**
+- What's most relevant for decision-making
+- Actionable insights and next steps
+- Professional implications
+- Time-sensitive information
+
+**Format with clear sections and bullet points for easy scanning.**"""
 
 # =============================================================================
 # CONVERSATION CONTEXT PROMPTS
@@ -332,9 +513,17 @@ def build_meeting_insights_prompt(meeting_context: str) -> str:
     """Build a meeting insights prompt."""
     return get_meeting_insights_prompt(meeting_context)
 
-def build_web_search_prompt(web_results: str) -> str:
-    """Build a web search summary prompt."""
-    return get_web_search_summary_prompt(web_results)
+def build_web_search_prompt(web_results: str, analysis_type: str = "summary", user_context: str = "", comparison_criteria: str = "", learning_objective: str = "") -> str:
+    """Build a web search prompt based on the type of analysis needed."""
+    if analysis_type == "analysis":
+        return get_web_search_analysis_prompt(web_results, user_context)
+    elif analysis_type == "comparison":
+        return get_web_search_comparison_prompt(web_results, comparison_criteria)
+    elif analysis_type == "learning":
+        return get_web_search_learning_prompt(web_results, learning_objective)
+    else:
+        # Default to summary
+        return get_web_search_summary_prompt(web_results)
 
 def build_summarization_prompt(text: str) -> str:
     """Build a summarization prompt."""

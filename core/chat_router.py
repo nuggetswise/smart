@@ -11,6 +11,7 @@ from core.tools.summarizer import Summarizer
 from core.tools.time_tool import TimeTool, get_current_time
 from core.agents.calendar_agent import CalendarAgent
 from core.memory.long_term_memory import LongTermMemory
+from core.deepthinkingprompt import get_advanced_deep_thinking_prompt
 import json
 import os
 import PyPDF2
@@ -124,6 +125,10 @@ class ChatRouter:
         if message.lower().startswith('/search '):
             query = message[8:]  # Remove '/search '
             return self._handle_web_search(query)
+        elif message.lower().startswith('/deep-thinking '):
+            # Handle deep thinking mode
+            query = message[15:]  # Remove '/deep-thinking '
+            return self._handle_deep_thinking(query)
         elif message.lower().startswith('/calendar'):
             return self._handle_calendar_check()
         elif message.lower().startswith('/summarize'):
@@ -227,14 +232,65 @@ class ChatRouter:
             return f"Error processing file: {str(e)}"
     
     def _handle_web_search(self, query: str) -> str:
-        """Handle web search requests."""
+        """Handle web search requests with enhanced analysis capabilities."""
         try:
-            results = self.websearch_tool.search(query)
+            # Extract user context from recent conversation
+            recent_context = self.memory.get_recent_messages(3)
+            user_context = ""
+            if recent_context:
+                # Build context from recent conversation
+                context_parts = []
+                for msg in recent_context[-2:]:  # Last 2 messages for context
+                    if msg['role'] == 'user':
+                        context_parts.append(f"Recent question: {msg['content']}")
+                user_context = " ".join(context_parts)
+            
+            # Perform enhanced web search
+            results = self.websearch_tool.search(query, analysis_type="auto", user_context=user_context)
+            
+            # Store in memory
             self.memory.add_message("user", f"/search {query}")
             self.memory.add_message("assistant", results)
+            
             return results
         except Exception as e:
-            return f"Web search failed: {str(e)}"
+            error_msg = f"Web search failed: {str(e)}"
+            self.memory.add_message("user", f"/search {query}")
+            self.memory.add_message("assistant", error_msg)
+            return error_msg
+    
+    def _handle_deep_thinking(self, message: str) -> str:
+        """Handle deep thinking mode requests with enhanced analytical responses."""
+        try:
+            # Get conversation context from memory
+            context = self.memory.get_recent_messages(5)
+            context_str = ""
+            if context:
+                context_parts = []
+                for msg in context:
+                    role = "User" if msg['role'] == 'user' else "Assistant"
+                    context_parts.append(f"{role}: {msg['content']}")
+                context_str = "\n".join(context_parts)
+            
+            # Build deep thinking prompt
+            prompt = get_advanced_deep_thinking_prompt(message, context_str)
+            
+            # Get selected model from session state
+            selected_model = getattr(st.session_state, 'selected_model', None)
+            
+            # Get LLM response with deep thinking prompt and mode
+            response = self.llm_client.get_response(prompt, selected_model, mode="deep_thinking")
+            
+            # Store in memory
+            self.memory.add_message("user", f"/deep-thinking {message}")
+            self.memory.add_message("assistant", response)
+            
+            return response
+        except Exception as e:
+            error_msg = f"Deep thinking analysis failed: {str(e)}"
+            self.memory.add_message("user", f"/deep-thinking {message}")
+            self.memory.add_message("assistant", error_msg)
+            return error_msg
     
     def _handle_calendar_check(self) -> str:
         """Handle calendar check requests."""
@@ -387,7 +443,7 @@ class ChatRouter:
             prompt = self._build_conversation_prompt(message, context, pending_file_content)
             
             # Get LLM response
-            response = self.llm_client.get_response(prompt, selected_model)
+            response = self.llm_client.get_response(prompt, selected_model, mode="chat")
             
             # Store in memory
             self.memory.add_message("user", message)
@@ -559,7 +615,7 @@ class ChatRouter:
                 persona_personality=self.persona_config['personality']
             )
             
-            response = self.llm_client.get_response(prompt, selected_model)
+            response = self.llm_client.get_response(prompt, selected_model, mode="chat")
             
             # Store in memory
             self.memory.add_message("user", f"[File analysis request: {file_name}] {user_question}")
@@ -613,7 +669,7 @@ class ChatRouter:
             prompt = build_meeting_prep_prompt(context)
 
             # Get AI response
-            response = self.llm_client.get_response(prompt)
+            response = self.llm_client.get_response(prompt, mode="chat")
             
             # Format the complete preparation guide
             prep_guide = f"""## 📋 **Meeting Preparation Guide for: {summary}**

@@ -150,11 +150,13 @@ def handle_user_input():
         # Route based on selected tool
         if selected_tool == 'Search the web':
             response = st.session_state.chat_router._handle_web_search(user_message)
+        elif selected_tool == 'Deep Thinking':
+            response = st.session_state.chat_router._handle_deep_thinking(user_message)
         else:
-        response = st.session_state.chat_router.process_user_message(
-            user_message, 
-            st.session_state.pending_file
-        )
+            response = st.session_state.chat_router.process_user_message(
+                user_message, 
+                st.session_state.pending_file
+            )
         
         # Clear pending file
         st.session_state.pending_file = None
@@ -184,7 +186,7 @@ def check_proactive_agents():
         webhook_messages = st.session_state.webhook_handler.get_pending_messages()
         for msg in webhook_messages:
             if isinstance(msg, dict) and 'content' in msg:
-            st.session_state.chat_history.append({'role': 'system', 'content': msg['content']})
+                st.session_state.chat_history.append({'role': 'system', 'content': msg['content']})
             else:
                 st.session_state.chat_history.append({'role': 'system', 'content': str(msg)})
 

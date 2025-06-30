@@ -44,10 +44,10 @@ def render_chat_interface():
     # Tool selector
     tool = st.selectbox(
         'Choose a tool:',
-        ['Chat', 'Search the web'],
+        ['Chat', 'Search the web', 'Deep Thinking'],
         index=0,
         key='selected_tool',
-        help='Select how you want to process your message.'
+        help='Select how you want to process your message. Deep Thinking mode provides more analytical and comprehensive responses.'
     )
 
     # File/image upload

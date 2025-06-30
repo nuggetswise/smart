@@ -267,7 +267,7 @@ class CalendarAgent:
             prompt = build_meeting_insights_prompt(context)
 
             # Get AI response
-            response = self.llm_client.get_response(prompt)
+            response = self.llm_client.get_response(prompt, mode="chat")
             
             # Format insights
             insights = response.strip()
