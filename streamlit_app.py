@@ -2,15 +2,42 @@
 SmartDesk AI - Intelligent Calendar Management and AI Assistant
 """
 import streamlit as st
+import sys
+import os
+
+# Add the current directory to Python path to ensure imports work
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from core.chat_router import ChatRouter
 from ui.chat_interface import render_chat_interface
 from api.webhook_handler import WebhookHandler
-import os
 from dotenv import load_dotenv
 import json
 from datetime import datetime
 from core.oauth_handler import show_connect_calendar_button, show_user_info, is_user_authenticated
-from components.style import apply_custom_style
+
+# Import style function with error handling
+try:
+    from components.style import apply_custom_style
+except ImportError as e:
+    st.error(f"Failed to import style module: {e}")
+    # Fallback function
+    def apply_custom_style():
+        st.markdown("""
+        <style>
+        .main { background: #fff; }
+        .stButton > button {
+            background: #a78bfa;
+            color: #fff;
+            border-radius: 12px;
+            height: 48px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 16px;
+            box-shadow: 0 2px 8px rgba(80, 80, 120, 0.08);
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
 # Load environment variables
 load_dotenv()
@@ -222,137 +249,14 @@ def render_enhanced_sidebar():
             if notifications != st.session_state.notifications_enabled:
                 st.session_state.notifications_enabled = notifications
                 st.rerun()
-            
-            # Quick Actions Section
-            st.markdown("#### 🚀 Quick Actions")
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("🔔 Test Notification", key="test_notification_btn"):
-                    test_notification = st.session_state.chat_router.calendar_agent.test_notification()
-                    if 'proactive_messages' not in st.session_state:
-                        st.session_state.proactive_messages = []
-                    st.session_state.proactive_messages.append(test_notification)
-                    st.success("✅ Test notification sent!")
-                    st.rerun()
-            
-            with col2:
-                if st.button("📅 View Calendar", key="view_calendar_btn"):
-                    events = st.session_state.chat_router.calendar_tool.get_upcoming_events_raw()
-                    if not st.session_state.chat_router.calendar_tool.credentials_available:
-                        st.error(f"Google Calendar API is not active. {st.session_state.chat_router.calendar_tool.error_message}\n\nTo enable calendar features, follow the setup guide in CALENDAR_SETUP.md.")
-                    elif events:
-                        st.info(f"📅 Found {len(events)} upcoming events")
-                        for event in events[:3]:
-                            st.write(f"- {event.get('summary', 'Unknown')}")
-                    else:
-                        st.info("📅 No upcoming events found")
-            
-            if st.button("📊 Agent Stats", key="agent_stats_btn"):
-                st.info(f"""
-                📊 **Agent Statistics:**
-                - Notifications: {status['notified_count']}
-                - Last Check: {status['last_check'][:19] if status['last_check'] else 'Never'}
-                - AI Insights: {'Enabled' if status['ai_insights_enabled'] else 'Disabled'}
-                - Meeting Prep: {'Enabled' if status['meeting_prep_enabled'] else 'Disabled'}
-                """)
-            
-            if st.button("🔄 Restart Agent", key="restart_agent_btn"):
-                st.session_state.chat_router.calendar_agent.stop_monitoring()
-                st.session_state.chat_router.calendar_agent.start_monitoring()
-                st.success("🔄 Agent restarted successfully!")
-                st.rerun()
-            
-            # Agent Statistics Section
-            st.markdown("#### 📊 Agent Statistics")
-            st.markdown(f"""
-            <div class="stats-card">
-                <p><strong>📊 Notifications:</strong> {status['notified_count']}</p>
-                <p><strong>🕐 Last Check:</strong> {status['last_check'][:19] if status['last_check'] else 'Never'}</p>
-                <p><strong>🤖 AI Insights:</strong> {'✅ Enabled' if status['ai_insights_enabled'] else '❌ Disabled'}</p>
-                <p><strong>📅 Events Monitored:</strong> {len(status.get('monitored_events', []))}</p>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # File Upload Section
-    st.markdown("### 📁 File Upload")
-    uploaded_file = st.file_uploader(
-        "Upload documents for analysis",
-        type=['pdf', 'txt', 'docx', 'png', 'jpg', 'jpeg'],
-        key="file_uploader"
-    )
-    if uploaded_file:
-        st.session_state.pending_file = uploaded_file
-        st.success(f"✅ {uploaded_file.name} uploaded successfully!")
-    
-    st.markdown("---")
-    
-    # Model Selection Section
-    st.markdown("### 🤖 LLM Model")
-    model_options = {
-        "Groq - Gemma2-9B": "gemma2-9b-it",
-        "Groq - Llama3.3-70B": "llama-3.3-70b-versatile", 
-        "Gemini - Gemma3N": "gemma-3n-e2b-it",
-        "OpenAI - GPT-3.5": "gpt-3.5-turbo",
-        "OpenAI - GPT-4": "gpt-4o",
-        "Ollama - Local": "mistral:latest"
-    }
-    
-    selected_model = st.selectbox(
-        "Choose your AI model:",
-        options=list(model_options.keys()),
-        index=0,  # Default to Gemini
-        help="Select the AI model for responses. Gemini is most cost-effective and currently working."
-    )
-    
-    # Store selected model in session state
-    st.session_state.selected_model = model_options[selected_model]
-    st.markdown(f"**Current Model:** {selected_model}")
-    
-    st.markdown("---")
-    
-    # Quick Commands Section
-    st.markdown("### 💬 Quick Commands")
-    st.markdown("- `/search [query]` - Web search")
-    st.markdown("- `/summarize` - Summarize text")
-    
-    st.markdown("---")
-    
-    # Features Section
-    st.markdown("### ✨ Features")
-    st.markdown("✅ OCR from images")
-    st.markdown("✅ Calendar integration")
-    st.markdown("✅ Web search")
-    st.markdown("✅ Persistent memory")
-    st.markdown("✅ Proactive agents")
-    st.markdown("✅ AI-powered calendar agent")
-    
-    # Clear chat button
-    if st.button("🗑️ Clear Chat History", key="clear_chat_btn"):
-        st.session_state.chat_router.clear_memory()
-        st.session_state.chat_history = []
-        st.session_state.proactive_messages = []
-        st.success("✅ Chat history cleared!")
-        st.rerun()
 
+# --- Consolidated Quick Actions at the bottom ---
 def render_quick_action_buttons():
-    """Render quick action buttons in the main chat area."""
+    """Render consolidated quick action buttons in the main chat area."""
     st.markdown("### 🚀 Quick Actions")
-    
-    col1, col2, col3 = st.columns(3)
+    status = st.session_state.chat_router.calendar_agent.get_status() if (st.session_state.chat_router and st.session_state.chat_router.calendar_agent) else {}
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        if st.button("📅 Check Calendar", key="quick_calendar_btn"):
-            events = st.session_state.chat_router.calendar_tool.get_upcoming_events_raw()
-            if events:
-                st.info(f"📅 Found {len(events)} upcoming events")
-                for event in events[:3]:
-                    st.write(f"- {event.get('summary', 'Unknown')}")
-            else:
-                st.info("📅 No upcoming events found")
-    
-    with col2:
         if st.button("🔔 Test Notification", key="quick_test_btn"):
             if st.session_state.chat_router.calendar_agent:
                 test_notification = st.session_state.chat_router.calendar_agent.test_notification()
@@ -361,10 +265,33 @@ def render_quick_action_buttons():
                 st.session_state.proactive_messages.append(test_notification)
                 st.success("✅ Test notification sent!")
                 st.rerun()
-    
+    with col2:
+        if st.button("📅 View Calendar", key="quick_calendar_btn"):
+            events = st.session_state.chat_router.calendar_tool.get_upcoming_events_raw()
+            if not st.session_state.chat_router.calendar_tool.credentials_available:
+                st.error(f"Google Calendar API is not active. {st.session_state.chat_router.calendar_tool.error_message}\n\nTo enable calendar features, follow the setup guide in CALENDAR_SETUP.md.")
+            elif events:
+                st.info(f"📅 Found {len(events)} upcoming events")
+                for event in events[:3]:
+                    st.write(f"- {event.get('summary', 'Unknown')}")
+            else:
+                st.info("📅 No upcoming events found")
     with col3:
-        if st.button("⚙️ Agent Settings", key="quick_settings_btn"):
-            st.info("Agent settings are available in the sidebar!")
+        if st.button("📊 Agent Stats", key="quick_stats_btn"):
+            st.info(f"""
+            📊 **Agent Statistics:**
+            - Notifications: {status.get('notified_count', 0)}
+            - Last Check: {status.get('last_check', '')[:19] if status.get('last_check') else 'Never'}
+            - AI Insights: {'Enabled' if status.get('ai_insights_enabled') else 'Disabled'}
+            - Meeting Prep: {'Enabled' if status.get('meeting_prep_enabled') else 'Disabled'}
+            """)
+    with col4:
+        if st.button("🔄 Restart Agent", key="quick_restart_btn"):
+            if st.session_state.chat_router.calendar_agent:
+                st.session_state.chat_router.calendar_agent.stop_monitoring()
+                st.session_state.chat_router.calendar_agent.start_monitoring()
+                st.success("🔄 Agent restarted successfully!")
+                st.rerun()
 
 def main():
     """Main application function."""

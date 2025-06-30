@@ -57,4 +57,8 @@ STYLE_CSS = f"""
 
 def inject_global_styles():
     import streamlit as st
-    st.markdown(STYLE_CSS, unsafe_allow_html=True) 
+    st.markdown(STYLE_CSS, unsafe_allow_html=True)
+
+def apply_custom_style():
+    """Alias for inject_global_styles for backward compatibility."""
+    inject_global_styles() 
